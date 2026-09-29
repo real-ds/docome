@@ -5,6 +5,9 @@ All notable changes to Docome will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Page rendering: `render_page`, `render_pages`, and `thumbnail_size` in `packages/pdf_engine/thumbnails.py`, returning encoded PNG, JPEG, or WebP page previews with bounded memory use
+- CLI: `docome thumbnail` for writing page previews to a file or directory, and `docome thumbnail sizes` for reporting fitted preview dimensions
+- REST API: `POST /api/v1/pdf/thumbnail` renders a page preview and `POST /api/v1/pdf/thumbnail/sizes` reports fitted preview dimensions
 - Element inspection: `list_elements`, `find_element`, `find_elements_in_rect`, and `get_element` on `EditorSession`, with stable element IDs per page
 - `packages/pdf_engine/elements.py` enumerates text spans, images, vector drawings, and annotations with bounding boxes, font details, and annotation content
 - CLI: `docome edit elements` (with `--page`, `--kind`, `--json`) and `docome edit pick --x --y` for hit testing
@@ -34,6 +37,7 @@ All notable changes to Docome will be documented in this file.
 - Alignment inference (left, right, center) from page geometry
 
 ### Fixed
+- `docome thumbnail -o page.png` created a directory named `page.png` for multi-page input. An output path that looks like a single image now fails with an explanation unless exactly one page is rendered
 - `move_element` and `resize_element` filled the source rectangle with opaque white before pasting a rasterized copy, which destroyed any text, image, or table underneath and left a visible white block. They now redact the region without painting a fill, so surrounding content is preserved
 - `move_element` and `resize_element` accepted empty or non-positive rectangles, producing corrupt or empty output. Invalid geometry is now rejected
 - `docx_to_pdf` was a stub that created one blank A4 page per paragraph and drew plain text at a fixed offset. It now renders the real document through the MuPDF Story layout engine, preserving page size, margins, headings, fonts, sizes, bold, italic, underline, color, alignment, list markers, indents, tables with borders and shading, and embedded images, with genuine reflow and pagination. Content that cannot fit the page frame now raises a clear error instead of looping forever

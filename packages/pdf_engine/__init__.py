@@ -17,6 +17,8 @@ from .models import (
     Rotation,
 )
 
+from .thumbnails import PageImage, render_page, render_pages, thumbnail_size
+
 __all__ = [
     "PdfEngine",
     "EditorSession",
@@ -28,6 +30,10 @@ __all__ = [
     "find_at",
     "find_in_rect",
     "list_elements",
+    "PageImage",
+    "render_page",
+    "render_pages",
+    "thumbnail_size",
     "CompressLevel",
     "Metadata",
     "PageRange",

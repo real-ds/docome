@@ -573,6 +573,78 @@ class TestElementInspection:
         assert response.status_code == 422
 
 
+class TestThumbnailRoutes:
+    def test_renders_page_png(self):
+        response = client.post(
+            "/api/v1/pdf/thumbnail",
+            files={"file": ("doc.pdf", make_pdf_bytes("Thumb me", pages=2), "application/pdf")},
+            data={"page": "2", "dpi": "72"},
+        )
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "image/png"
+        assert response.content.startswith(b"\x89PNG")
+        assert response.headers["X-Docome-Page"] == "2"
+
+    def test_renders_jpeg(self):
+        response = client.post(
+            "/api/v1/pdf/thumbnail",
+            files={"file": ("doc.pdf", make_pdf_bytes(), "application/pdf")},
+            data={"image_format": "jpeg"},
+        )
+        assert response.status_code == 200
+        assert response.content.startswith(b"\xff\xd8\xff")
+
+    def test_rejects_bad_page(self):
+        response = client.post(
+            "/api/v1/pdf/thumbnail",
+            files={"file": ("doc.pdf", make_pdf_bytes(), "application/pdf")},
+            data={"page": "9"},
+        )
+        assert response.status_code == 400
+        assert "Invalid page" in response.json()["detail"]
+
+    def test_rejects_bad_format(self):
+        response = client.post(
+            "/api/v1/pdf/thumbnail",
+            files={"file": ("doc.pdf", make_pdf_bytes(), "application/pdf")},
+            data={"image_format": "tiff"},
+        )
+        assert response.status_code == 400
+
+    def test_rejects_out_of_range_dpi(self):
+        response = client.post(
+            "/api/v1/pdf/thumbnail",
+            files={"file": ("doc.pdf", make_pdf_bytes(), "application/pdf")},
+            data={"dpi": "5000"},
+        )
+        assert response.status_code == 422
+
+    def test_rejects_empty_upload(self):
+        response = client.post(
+            "/api/v1/pdf/thumbnail",
+            files={"file": ("doc.pdf", b"", "application/pdf")},
+        )
+        assert response.status_code == 400
+
+    def test_thumbnail_sizes(self):
+        response = client.post(
+            "/api/v1/pdf/thumbnail/sizes",
+            files={"file": ("doc.pdf", make_pdf_bytes(pages=2), "application/pdf")},
+        )
+        assert response.status_code == 200
+        pages = response.json()["pages"]
+        assert [entry["page"] for entry in pages] == [1, 2]
+        assert all(entry["width"] > 0 for entry in pages)
+
+    def test_thumbnail_sizes_rejects_bad_dimension(self):
+        response = client.post(
+            "/api/v1/pdf/thumbnail/sizes",
+            files={"file": ("doc.pdf", make_pdf_bytes(), "application/pdf")},
+            data={"max_dimension": "0"},
+        )
+        assert response.status_code == 422
+
+
 class TestWorkspaceHelper:
     def test_safe_name_strips_traversal(self):
         from app.core.workspace import safe_name

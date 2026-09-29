@@ -14,6 +14,7 @@ from app.core.workspace import (
     workspace,
 )
 from pdf_engine import CompressLevel, Metadata, PageRange, PdfEngine, Rotation
+from pdf_engine.thumbnails import MAX_DPI, MIN_DPI, render_page, thumbnail_size
 
 router = APIRouter(prefix="/api/v1/pdf", tags=["pdf"])
 
@@ -235,3 +236,50 @@ async def page_count(file: UploadFile = File(...)):
         return {"page_count": engine.get_page_count(content)}
     except Exception as error:
         raise HTTPException(status_code=422, detail=str(error))
+
+
+@router.post("/thumbnail/sizes")
+async def thumbnail_sizes(
+    file: UploadFile = File(...),
+    max_dimension: int = Form(240, ge=1),
+):
+    content = await read_upload(file)
+    try:
+        sizes = thumbnail_size(content, max_dimension)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+    except Exception as error:
+        raise HTTPException(status_code=422, detail=str(error))
+    return {
+        "pages": [
+            {"page": page, "width": width, "height": height} for page, (width, height) in sizes
+        ]
+    }
+
+
+@router.post("/thumbnail")
+async def thumbnail(
+    file: UploadFile = File(...),
+    page: int = Form(1, ge=1),
+    dpi: Optional[int] = Form(None, ge=MIN_DPI, le=MAX_DPI),
+    image_format: str = Form("png"),
+):
+    """Render one page preview."""
+    content = await read_upload(file)
+    try:
+        image = render_page(content, page=page, dpi=dpi, image_format=image_format)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+    except Exception as error:
+        raise HTTPException(status_code=422, detail=str(error))
+
+    return Response(
+        content=image.data,
+        media_type=image.media_type,
+        headers={
+            "Content-Disposition": f'inline; filename="page-{image.page}.{image_format.lower()}"',
+            "X-Docome-Page": str(image.page),
+            "X-Docome-Width": str(image.width),
+            "X-Docome-Height": str(image.height),
+        },
+    )

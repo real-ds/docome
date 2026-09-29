@@ -26,6 +26,26 @@ docome ocr pdf2searchable scanned.pdf -o searchable.pdf
 docome pdf rotate document.pdf -d 90 -o rotated.pdf
 ```
 
+## Page Previews
+
+Render page thumbnails to image files for the editor or web UI:
+
+```bash
+docome thumbnail document.pdf -o previews/            # every page, into a directory
+docome thumbnail document.pdf -o cover.png --pages 1   # a single page to one file
+docome thumbnail document.pdf -o previews/ --format jpeg --dpi 96
+docome thumbnail sizes document.pdf --max 240          # fitted preview dimensions
+docome thumbnail sizes document.pdf --json
+```
+
+DPI must be between 18 and 600 and defaults to 18, which suits small previews.
+Formats are `png` (default), `jpeg`, and `webp`. When the output path ends in an
+image extension, exactly one page must be rendered; otherwise Docome treats the
+path as a directory and writes `<name>-p<page>.<format>` files.
+
+The same rendering is available over REST via `POST /api/v1/pdf/thumbnail` and
+`POST /api/v1/pdf/thumbnail/sizes`.
+
 ## Editing
 
 Single operations take an input and an output path:
