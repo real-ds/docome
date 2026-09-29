@@ -1,0 +1,39 @@
+[project]
+name = "docome"
+version = "0.1.0"
+description = "All-in-one PDF and document processing platform"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic",
+    "pydantic-settings",
+    "pymupdf",
+    "pikepdf",
+    "typer",
+    "rich",
+    "pillow",
+    "python-docx",
+    "openpyxl",
+    "python-pptx",
+    "customtkinter",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "httpx",
+    "ruff",
+    "mypy",
+]
+build = [
+    "pyinstaller",
+]
+
+[project.scripts]
+docome = "cli.docome.main:app"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
