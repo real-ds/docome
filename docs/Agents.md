@@ -116,7 +116,7 @@ git commit -m "<agent>: <deliverable> - <what changed>
 - [ ] Implementation complete
 - [ ] Unit tests written and passing
 - [ ] Integration tests passing
-- [ ] Full test suite green (38/38)
+- [ ] Full test suite green (88/88)
 - [ ] Manual CLI/API verification done
 - [ ] Lint/type clean
 - [ ] Committed with descriptive message
