@@ -29,6 +29,10 @@ All notable changes to Docome will be documented in this file.
 - Alignment inference (left, right, center) from page geometry
 
 ### Fixed
+- The PDF operation routes (merge, split, extract, rotate, compress, metadata, page count) no longer hardcode `/tmp` paths, so they work on Windows. They now live in `apps/api/app/api/routes/pdf_ops.py`, use the same workspace helper as the new routes, return in-memory bytes, and are covered by tests
+- `POST /api/v1/pdf/split` returns a real ZIP when the input produces more than one part, instead of pointing at files that were already deleted
+- `POST /api/v1/pdf/extract` rejected valid input unless a page list was passed, because it tested a loop variable with `in dir()`; it now accepts either a page list or a `start`/`end` range and reports which one is missing
+- `POST /api/v1/pdf/merge` raised `NameError` on engine failure because `output_path` was never assigned before the `finally` cleanup block
 - API file responses are now returned as in-memory bytes, so downloads no longer depend on temp files that are deleted before the body is streamed
 - Uploads are written to a separate input directory, so an upload named `input.pdf` no longer collides with its own output path and fail with "save to original must be incremental"
 - Uploaded filenames are sanitized, so `../../etc/passwd.pdf` cannot escape the workspace
@@ -39,7 +43,7 @@ All notable changes to Docome will be documented in this file.
 - Stale column indices leaked between detection passes
 
 ### Known Issues
-- The pre-existing conversion and PDF routes in `apps/api/app/main.py` still hardcode `/tmp` paths, so they fail on Windows. They are not covered by tests yet.
+- `POST /api/v1/convert/docx2pdf` relies on `ConversionEngine.docx_to_pdf`, which is still a naive stub. Use the HQ pipeline in the reverse direction instead.
 
 ## [0.1.0] - 2024
 

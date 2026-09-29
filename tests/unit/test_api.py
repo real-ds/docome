@@ -288,6 +288,208 @@ class TestFidelityEndpoint:
         assert response.status_code == 422
 
 
+class TestPdfOperations:
+    def test_merge_two_pdfs(self):
+        response = client.post(
+            "/api/v1/pdf/merge",
+            files=[
+                ("files", ("a.pdf", make_pdf_bytes("First"), "application/pdf")),
+                ("files", ("b.pdf", make_pdf_bytes("Second"), "application/pdf")),
+            ],
+        )
+        assert response.status_code == 200
+        document = pymupdf.open(stream=response.content, filetype="pdf")
+        assert document.page_count == 2
+        document.close()
+
+    def test_merge_requires_two_files(self):
+        response = client.post(
+            "/api/v1/pdf/merge",
+            files=[("files", ("a.pdf", make_pdf_bytes("Only"), "application/pdf"))],
+        )
+        assert response.status_code == 400
+
+    def test_split_single_page_returns_pdf(self):
+        response = client.post(
+            "/api/v1/pdf/split",
+            files={"file": ("doc.pdf", make_pdf_bytes("Split me", pages=2), "application/pdf")},
+            data={"pages_per_split": "2"},
+        )
+        assert response.status_code == 200
+        document = pymupdf.open(stream=response.content, filetype="pdf")
+        assert document.page_count == 2
+        document.close()
+
+    def test_split_many_pages_returns_zip(self):
+        response = client.post(
+            "/api/v1/pdf/split",
+            files={"file": ("doc.pdf", make_pdf_bytes("Split me", pages=3), "application/pdf")},
+            data={"pages_per_split": "1"},
+        )
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "application/zip"
+
+        import zipfile
+
+        archive = zipfile.ZipFile(io.BytesIO(response.content))
+        assert len(archive.namelist()) == 3
+
+    def test_split_rejects_zero(self):
+        response = client.post(
+            "/api/v1/pdf/split",
+            files={"file": ("doc.pdf", make_pdf_bytes(), "application/pdf")},
+            data={"pages_per_split": "0"},
+        )
+        assert response.status_code == 400
+
+    def test_extract_pages(self):
+        response = client.post(
+            "/api/v1/pdf/extract",
+            files={"file": ("doc.pdf", make_pdf_bytes("Extract", pages=3), "application/pdf")},
+            data={"pages": "1,3"},
+        )
+        assert response.status_code == 200
+        document = pymupdf.open(stream=response.content, filetype="pdf")
+        assert document.page_count == 2
+        document.close()
+
+    def test_extract_requires_selection(self):
+        response = client.post(
+            "/api/v1/pdf/extract",
+            files={"file": ("doc.pdf", make_pdf_bytes(), "application/pdf")},
+        )
+        assert response.status_code == 400
+
+    def test_extract_rejects_bad_pages(self):
+        response = client.post(
+            "/api/v1/pdf/extract",
+            files={"file": ("doc.pdf", make_pdf_bytes(), "application/pdf")},
+            data={"pages": "one,two"},
+        )
+        assert response.status_code == 400
+
+    def test_extract_rejects_bad_range(self):
+        response = client.post(
+            "/api/v1/pdf/extract",
+            files={"file": ("doc.pdf", make_pdf_bytes(), "application/pdf")},
+            data={"start": "3", "end": "1"},
+        )
+        assert response.status_code == 400
+
+    def test_rotate(self):
+        response = client.post(
+            "/api/v1/pdf/rotate",
+            files={"file": ("doc.pdf", make_pdf_bytes(), "application/pdf")},
+            data={"degrees": "90"},
+        )
+        assert response.status_code == 200
+        document = pymupdf.open(stream=response.content, filetype="pdf")
+        assert document[0].rotation == 90
+        document.close()
+
+    def test_rotate_rejects_bad_degrees(self):
+        response = client.post(
+            "/api/v1/pdf/rotate",
+            files={"file": ("doc.pdf", make_pdf_bytes(), "application/pdf")},
+            data={"degrees": "45"},
+        )
+        assert response.status_code == 400
+
+    def test_compress(self):
+        response = client.post(
+            "/api/v1/pdf/compress",
+            files={"file": ("doc.pdf", make_pdf_bytes("Compress me", pages=3), "application/pdf")},
+            data={"level": "recommended"},
+        )
+        assert response.status_code == 200
+        document = pymupdf.open(stream=response.content, filetype="pdf")
+        assert document.page_count == 3
+        document.close()
+
+    def test_compress_rejects_bad_level(self):
+        response = client.post(
+            "/api/v1/pdf/compress",
+            files={"file": ("doc.pdf", make_pdf_bytes(), "application/pdf")},
+            data={"level": "turbo"},
+        )
+        assert response.status_code == 400
+
+    def test_get_metadata(self):
+        response = client.post(
+            "/api/v1/pdf/metadata/read",
+            files={"file": ("doc.pdf", make_pdf_bytes(), "application/pdf")},
+        )
+        assert response.status_code == 200
+        assert set(response.json()) >= {"title", "author", "producer"}
+
+    def test_update_metadata(self):
+        response = client.post(
+            "/api/v1/pdf/metadata",
+            files={"file": ("doc.pdf", make_pdf_bytes(), "application/pdf")},
+            data={"metadata": json.dumps({"title": "Quarterly Report", "author": "Docome"})},
+        )
+        assert response.status_code == 200
+        document = pymupdf.open(stream=response.content, filetype="pdf")
+        assert document.metadata["title"] == "Quarterly Report"
+        document.close()
+
+    def test_update_metadata_rejects_bad_json(self):
+        response = client.post(
+            "/api/v1/pdf/metadata",
+            files={"file": ("doc.pdf", make_pdf_bytes(), "application/pdf")},
+            data={"metadata": "{oops"},
+        )
+        assert response.status_code == 422
+
+    def test_page_count(self):
+        response = client.post(
+            "/api/v1/pdf/pages/count",
+            files={"file": ("doc.pdf", make_pdf_bytes(pages=4), "application/pdf")},
+        )
+        assert response.status_code == 200
+        assert response.json() == {"page_count": 4}
+
+    def test_empty_upload_rejected(self):
+        response = client.post(
+            "/api/v1/pdf/pages/count",
+            files={"file": ("doc.pdf", b"", "application/pdf")},
+        )
+        assert response.status_code == 400
+
+
+class TestBasicConversionRoutes:
+    def test_pdf2txt(self):
+        response = client.post(
+            "/api/v1/convert/pdf2txt",
+            files={"file": ("doc.pdf", make_pdf_bytes("Plain text target"), "application/pdf")},
+        )
+        assert response.status_code == 200
+        assert "Plain text target" in response.json()["text"]
+
+    def test_pdf2md(self):
+        response = client.post(
+            "/api/v1/convert/pdf2md",
+            files={"file": ("doc.pdf", make_pdf_bytes("Markdown target"), "application/pdf")},
+        )
+        assert response.status_code == 200
+        assert "Markdown target" in response.json()["markdown"]
+
+    def test_pdf2docx(self):
+        response = client.post(
+            "/api/v1/convert/pdf2docx",
+            files={"file": ("doc.pdf", make_pdf_bytes("Basic conversion"), "application/pdf")},
+        )
+        assert response.status_code == 200
+        assert "wordprocessingml" in response.headers["content-type"]
+
+    def test_empty_upload_rejected(self):
+        response = client.post(
+            "/api/v1/convert/pdf2txt",
+            files={"file": ("doc.pdf", b"", "application/pdf")},
+        )
+        assert response.status_code == 400
+
+
 class TestWorkspaceHelper:
     def test_safe_name_strips_traversal(self):
         from app.core.workspace import safe_name
