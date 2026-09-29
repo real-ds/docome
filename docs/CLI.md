@@ -67,6 +67,24 @@ operation index. Colors accept `[r, g, b]` or `"r,g,b"`. `add_image` takes
 `image_path` or `image_base64`. Rectangles can be given inline (`x0`, `y0`,
 `x1`, `y1`) or nested under `rect`.
 
+### Finding what to edit
+
+Edit operations address content by coordinates. To discover what is on a
+page, list the elements or ask what sits under a point:
+
+```bash
+docome edit elements input.pdf
+docome edit elements input.pdf --page 2 --kind text
+docome edit elements input.pdf --json
+docome edit pick input.pdf --x 120 --y 97
+docome edit pick input.pdf --x 120 --y 97 --json
+```
+
+Kinds are `text`, `image`, `drawing`, and `annotation`. Each element reports
+a stable ID, its page, bounding box, and, for text, the font, size, and
+content. The same information is available over REST via
+`POST /api/v1/edit/elements` and `POST /api/v1/edit/elements/pick`.
+
 ## Conversion Fidelity
 
 ```bash

@@ -15,6 +15,7 @@ from packages.pdf_engine import (
     EditPlanError,
     EditPlanExecutor,
     EditorSession,
+    ElementKind,
     ShapeType,
     apply_edit_plan,
 )
@@ -243,4 +244,94 @@ def list_actions():
     table.add_column("Action")
     for action in EditPlanExecutor().available_actions():
         table.add_row(action)
+    console.print(table)
+
+
+@edit_app.command("elements")
+def list_elements(
+    input: str = typer.Argument(..., help="Input PDF file"),
+    page: Optional[int] = typer.Option(None, "--page", "-p", help="Limit to one page"),
+    kind: Optional[str] = typer.Option(
+        None, "--kind", "-k", help="Filter by kind: text, image, drawing, annotation"
+    ),
+    as_json: bool = typer.Option(False, "--json", help="Emit JSON instead of a table"),
+):
+    """List the addressable elements of a PDF, so edits can target them."""
+    kinds = None
+    if kind:
+        try:
+            kinds = [ElementKind(kind.lower())]
+        except ValueError:
+            console.print(f"[red]Unknown kind: {kind}[/red]")
+            raise typer.Exit(code=1)
+
+    try:
+        with EditorSession(input) as session:
+            found = session.list_elements(page=page, kinds=kinds)
+    except (ValueError, OSError) as error:
+        console.print(f"[red]Could not read {input}: {error}[/red]")
+        raise typer.Exit(code=1)
+
+    if not found:
+        console.print("[yellow]No elements found.[/yellow]")
+        return
+
+    if as_json:
+        console.print_json(json.dumps([element.to_dict() for element in found]))
+        return
+
+    table = Table(title=f"Elements in {input}", show_lines=True)
+    for column in ("ID", "Page", "Kind", "Rect", "Text"):
+        table.add_column(column)
+    for element in found:
+        rect = element.rect
+        preview = (element.text or "").strip().replace("\n", " ")
+        if len(preview) > 40:
+            preview = preview[:37] + "..."
+        table.add_row(
+            element.id,
+            str(element.page),
+            element.kind.value,
+            f"{rect.x0:.0f},{rect.y0:.0f},{rect.x1:.0f},{rect.y1:.0f}",
+            preview,
+        )
+    console.print(table)
+
+
+@edit_app.command("pick")
+def pick_element(
+    input: str = typer.Argument(..., help="Input PDF file"),
+    x: float = typer.Option(..., "--x", help="X coordinate"),
+    y: float = typer.Option(..., "--y", help="Y coordinate"),
+    page: int = typer.Option(1, "--page", "-p", help="Page number"),
+    as_json: bool = typer.Option(False, "--json", help="Emit JSON instead of a table"),
+):
+    """Show what sits under a point, topmost first."""
+    try:
+        with EditorSession(input) as session:
+            hits = session.find_element(page, x, y)
+    except (ValueError, OSError) as error:
+        console.print(f"[red]Could not read {input}: {error}[/red]")
+        raise typer.Exit(code=1)
+
+    if not hits:
+        console.print("[yellow]Nothing at that point.[/yellow]")
+        return
+
+    if as_json:
+        console.print_json(json.dumps([element.to_dict() for element in hits]))
+        return
+
+    table = Table(title=f"Elements at ({x:g}, {y:g}) on page {page}", show_lines=True)
+    for column in ("ID", "Kind", "Rect", "Text"):
+        table.add_column(column)
+    for element in hits:
+        rect = element.rect
+        preview = (element.text or "").strip().replace("\n", " ")
+        table.add_row(
+            element.id,
+            element.kind.value,
+            f"{rect.x0:.0f},{rect.y0:.0f},{rect.x1:.0f},{rect.y1:.0f}",
+            preview[:50],
+        )
     console.print(table)

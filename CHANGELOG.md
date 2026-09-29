@@ -5,6 +5,11 @@ All notable changes to Docome will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Element inspection: `list_elements`, `find_element`, `find_elements_in_rect`, and `get_element` on `EditorSession`, with stable element IDs per page
+- `packages/pdf_engine/elements.py` enumerates text spans, images, vector drawings, and annotations with bounding boxes, font details, and annotation content
+- CLI: `docome edit elements` (with `--page`, `--kind`, `--json`) and `docome edit pick --x --y` for hit testing
+- REST API: `POST /api/v1/edit/elements` and `POST /api/v1/edit/elements/pick`
+- `EditorSession` now supports `with` so the PDF file handle is always released
 - REST API: `POST /api/v1/edit/apply` and `GET /api/v1/edit/actions` exposing the same edit-plan engine as the CLI
 - REST API: `POST /api/v1/convert/pdf2docx-hq` and `POST /api/v1/convert/fidelity`
 - `apps/api/app/core/workspace.py` for cross-platform, self-cleaning temp workspaces and filename sanitization
@@ -29,6 +34,8 @@ All notable changes to Docome will be documented in this file.
 - Alignment inference (left, right, center) from page geometry
 
 ### Fixed
+- `move_element` and `resize_element` filled the source rectangle with opaque white before pasting a rasterized copy, which destroyed any text, image, or table underneath and left a visible white block. They now redact the region without painting a fill, so surrounding content is preserved
+- `move_element` and `resize_element` accepted empty or non-positive rectangles, producing corrupt or empty output. Invalid geometry is now rejected
 - `docx_to_pdf` was a stub that created one blank A4 page per paragraph and drew plain text at a fixed offset. It now renders the real document through the MuPDF Story layout engine, preserving page size, margins, headings, fonts, sizes, bold, italic, underline, color, alignment, list markers, indents, tables with borders and shading, and embedded images, with genuine reflow and pagination. Content that cannot fit the page frame now raises a clear error instead of looping forever
 - `docx_to_pdf` read only `Document.paragraphs`, so tables and images were silently dropped. The document body is now walked in order, so mixed content keeps its sequence
 - The PDF operation routes (merge, split, extract, rotate, compress, metadata, page count) no longer hardcode `/tmp` paths, so they work on Windows. They now live in `apps/api/app/api/routes/pdf_ops.py`, use the same workspace helper as the new routes, return in-memory bytes, and are covered by tests

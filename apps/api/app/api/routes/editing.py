@@ -6,7 +6,14 @@ from fastapi.responses import Response
 from pydantic import BaseModel, Field, ValidationError
 
 from app.core.workspace import PDF_MEDIA_TYPE, output_path, uploaded_file, workspace
-from pdf_engine import EditPlan, EditPlanError, EditPlanExecutor, apply_edit_plan
+from pdf_engine import (
+    EditPlan,
+    EditPlanError,
+    EditPlanExecutor,
+    EditorSession,
+    ElementKind,
+    apply_edit_plan,
+)
 
 router = APIRouter(prefix="/api/v1/edit", tags=["edit"])
 
@@ -101,3 +108,70 @@ async def apply_edit(file: UploadFile = File(...), plan: str = Form(...)):
 @router.get("/actions")
 async def list_actions():
     return {"actions": EditPlanExecutor().available_actions()}
+
+
+@router.post("/elements")
+async def list_elements(
+    file: UploadFile = File(...),
+    page: Optional[int] = Form(None, ge=1),
+    kind: Optional[str] = Form(None),
+):
+    """List the addressable elements of an uploaded PDF."""
+    kinds = _parse_kinds(kind)
+
+    content = await file.read()
+    if not content:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty")
+
+    with workspace() as directory:
+        with uploaded_file(directory, file.filename, content, "input.pdf") as source:
+            try:
+                with EditorSession(str(source)) as session:
+                    found = session.list_elements(page=page, kinds=kinds)
+            except (ValueError, TypeError) as error:
+                raise HTTPException(status_code=422, detail=str(error))
+
+    return {
+        "count": len(found),
+        "elements": [element.to_dict() for element in found],
+    }
+
+
+@router.post("/elements/pick")
+async def pick_element(
+    file: UploadFile = File(...),
+    x: float = Form(...),
+    y: float = Form(...),
+    page: int = Form(1, ge=1),
+    kind: Optional[str] = Form(None),
+):
+    """Return the elements under a point, topmost first."""
+    kinds = _parse_kinds(kind)
+
+    content = await file.read()
+    if not content:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty")
+
+    with workspace() as directory:
+        with uploaded_file(directory, file.filename, content, "input.pdf") as source:
+            try:
+                with EditorSession(str(source)) as session:
+                    hits = session.find_element(page, x, y, kinds=kinds)
+            except (ValueError, TypeError) as error:
+                raise HTTPException(status_code=422, detail=str(error))
+
+    return {
+        "count": len(hits),
+        "elements": [element.to_dict() for element in hits],
+    }
+
+
+def _parse_kinds(kind: Optional[str]) -> Optional[List[ElementKind]]:
+    if not kind:
+        return None
+    requested = [part.strip().lower() for part in kind.split(",") if part.strip()]
+    try:
+        return [ElementKind(value) for value in requested]
+    except ValueError as error:
+        allowed = ", ".join(item.value for item in ElementKind)
+        raise HTTPException(status_code=400, detail=f"kind must be one of: {allowed}") from error

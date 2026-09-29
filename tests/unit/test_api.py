@@ -490,6 +490,89 @@ class TestBasicConversionRoutes:
         assert response.status_code == 400
 
 
+class TestElementInspection:
+    def _pdf(self):
+        return make_pdf_bytes("Inspectable Heading", pages=2)
+
+    def test_lists_elements(self):
+        response = client.post(
+            "/api/v1/edit/elements",
+            files={"file": ("doc.pdf", self._pdf(), "application/pdf")},
+        )
+        assert response.status_code == 200
+        payload = response.json()
+        assert payload["count"] >= 1
+        first = payload["elements"][0]
+        assert set(first) >= {"id", "page", "kind", "x0", "y0", "x1", "y1"}
+
+    def test_page_filter(self):
+        response = client.post(
+            "/api/v1/edit/elements",
+            files={"file": ("doc.pdf", self._pdf(), "application/pdf")},
+            data={"page": "2"},
+        )
+        assert response.status_code == 200
+        assert {e["page"] for e in response.json()["elements"]} == {2}
+
+    def test_kind_filter(self):
+        response = client.post(
+            "/api/v1/edit/elements",
+            files={"file": ("doc.pdf", self._pdf(), "application/pdf")},
+            data={"kind": "text"},
+        )
+        assert response.status_code == 200
+        assert all(e["kind"] == "text" for e in response.json()["elements"])
+
+    def test_invalid_kind_rejected(self):
+        response = client.post(
+            "/api/v1/edit/elements",
+            files={"file": ("doc.pdf", self._pdf(), "application/pdf")},
+            data={"kind": "hologram"},
+        )
+        assert response.status_code == 400
+        assert "kind must be one of" in response.json()["detail"]
+
+    def test_invalid_page_rejected(self):
+        response = client.post(
+            "/api/v1/edit/elements",
+            files={"file": ("doc.pdf", self._pdf(), "application/pdf")},
+            data={"page": "99"},
+        )
+        assert response.status_code == 422
+
+    def test_empty_upload_rejected(self):
+        response = client.post(
+            "/api/v1/edit/elements",
+            files={"file": ("doc.pdf", b"", "application/pdf")},
+        )
+        assert response.status_code == 400
+
+    def test_pick_returns_topmost(self):
+        response = client.post(
+            "/api/v1/edit/elements/pick",
+            files={"file": ("doc.pdf", self._pdf(), "application/pdf")},
+            data={"x": "80", "y": "97"},
+        )
+        assert response.status_code == 200
+        assert response.json()["count"] >= 1
+
+    def test_pick_miss_returns_zero(self):
+        response = client.post(
+            "/api/v1/edit/elements/pick",
+            files={"file": ("doc.pdf", self._pdf(), "application/pdf")},
+            data={"x": "5", "y": "800"},
+        )
+        assert response.status_code == 200
+        assert response.json() == {"count": 0, "elements": []}
+
+    def test_pick_requires_coordinates(self):
+        response = client.post(
+            "/api/v1/edit/elements/pick",
+            files={"file": ("doc.pdf", self._pdf(), "application/pdf")},
+        )
+        assert response.status_code == 422
+
+
 class TestWorkspaceHelper:
     def test_safe_name_strips_traversal(self):
         from app.core.workspace import safe_name

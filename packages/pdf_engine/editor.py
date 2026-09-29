@@ -7,6 +7,15 @@ from typing import List, Optional, Tuple, Union
 
 import pymupdf
 
+from .elements import (
+    Element,
+    ElementKind,
+    element_by_id,
+    find_at,
+    find_in_rect,
+    list_elements,
+)
+
 
 class ShapeType(str, Enum):
     RECT = "rect"
@@ -51,6 +60,57 @@ class EditorSession:
     @property
     def page_count(self) -> int:
         return len(self.doc)
+
+    def list_elements(
+        self,
+        page: Optional[int] = None,
+        kinds: Optional[List[ElementKind]] = None,
+    ) -> List[Element]:
+        """List addressable elements, for one page or the whole document."""
+        pages = self._resolve_pages(page)
+        found: List[Element] = []
+        for number in pages:
+            found.extend(list_elements(self.doc[number - 1], number, kinds))
+        return found
+
+    def find_element(
+        self,
+        page: int,
+        x: float,
+        y: float,
+        kinds: Optional[List[ElementKind]] = None,
+    ) -> List[Element]:
+        """Return the elements under a point, topmost first."""
+        pdf_page = self._resolve_page(page)
+        return find_at(pdf_page, page, x, y, kinds)
+
+    def find_elements_in_rect(
+        self,
+        page: int,
+        x0: float,
+        y0: float,
+        x1: float,
+        y1: float,
+        kinds: Optional[List[ElementKind]] = None,
+    ) -> List[Element]:
+        """Return the elements overlapping a rectangle."""
+        pdf_page = self._resolve_page(page)
+        return find_in_rect(pdf_page, page, pymupdf.Rect(x0, y0, x1, y1), kinds)
+
+    def get_element(self, page: int, element_id: str) -> Optional[Element]:
+        pdf_page = self._resolve_page(page)
+        return element_by_id(pdf_page, page, element_id)
+
+    def _resolve_page(self, page: int) -> pymupdf.Page:
+        if page < 1 or page > len(self.doc):
+            raise ValueError(f"Invalid page: {page}")
+        return self.doc[page - 1]
+
+    def _resolve_pages(self, page: Optional[int]) -> List[int]:
+        if page is None:
+            return list(range(1, len(self.doc) + 1))
+        self._resolve_page(page)
+        return [page]
 
     def _save_snapshot(self):
         buf = io.BytesIO()
@@ -230,6 +290,30 @@ class EditorSession:
 
         self._truncate_and_save()
 
+    def _relocate(
+        self,
+        page: int,
+        src: pymupdf.Rect,
+        dst: pymupdf.Rect,
+    ) -> None:
+        """Move or resize a region without painting over what is behind it.
+
+        The previous implementation filled the source rectangle with opaque
+        white before pasting a rasterized copy, which destroyed any text,
+        image, or table underneath and left a visible white block. Redacting
+        first removes the region without painting a fill over the page.
+        """
+        pdf_page = self._resolve_page(page)
+        pix = pdf_page.get_pixmap(clip=src, dpi=150)
+        pdf_page.add_redact_annot(src, fill=False)
+        pdf_page.apply_redactions(
+            images=pymupdf.PDF_REDACT_IMAGE_NONE,
+            graphics=pymupdf.PDF_REDACT_LINE_ART_NONE,
+            text=pymupdf.PDF_REDACT_TEXT_REMOVE,
+        )
+        pdf_page.insert_image(dst, pixmap=pix)
+        self._truncate_and_save()
+
     def move_element(
         self,
         page: int,
@@ -240,19 +324,10 @@ class EditorSession:
         dx: float,
         dy: float,
     ):
-        if page < 1 or page > len(self.doc):
-            raise ValueError(f"Invalid page: {page}")
-        pdf_page = self.doc[page - 1]
         src = pymupdf.Rect(x0, y0, x1, y1)
-        dst = pymupdf.Rect(x0 + dx, y0 + dy, x1 + dx, y1 + dy)
-        clip = src
-        pix = pdf_page.get_pixmap(clip=src, dpi=150)
-        shape = pdf_page.new_shape()
-        shape.draw_rect(src)
-        shape.finish(fill=(1, 1, 1), color=(1, 1, 1))
-        shape.commit(overlay=True)
-        pdf_page.insert_image(dst, pixmap=pix)
-        self._truncate_and_save()
+        if src.is_empty:
+            raise ValueError("Source rectangle must have a positive area")
+        self._relocate(page, src, pymupdf.Rect(src.x0 + dx, src.y0 + dy, src.x1 + dx, src.y1 + dy))
 
     def resize_element(
         self,
@@ -264,18 +339,12 @@ class EditorSession:
         width: float,
         height: float,
     ):
-        if page < 1 or page > len(self.doc):
-            raise ValueError(f"Invalid page: {page}")
-        pdf_page = self.doc[page - 1]
         src = pymupdf.Rect(x0, y0, x1, y1)
-        dst = pymupdf.Rect(x0, y0, x0 + width, y0 + height)
-        pix = pdf_page.get_pixmap(clip=src, dpi=150)
-        shape = pdf_page.new_shape()
-        shape.draw_rect(src)
-        shape.finish(fill=(1, 1, 1), color=(1, 1, 1))
-        shape.commit(overlay=True)
-        pdf_page.insert_image(dst, pixmap=pix)
-        self._truncate_and_save()
+        if src.is_empty:
+            raise ValueError("Source rectangle must have a positive area")
+        if width <= 0 or height <= 0:
+            raise ValueError("width and height must be positive")
+        self._relocate(page, src, pymupdf.Rect(src.x0, src.y0, src.x0 + width, src.y0 + height))
 
     def save(self, output_path: Union[str, Path]):
         self.doc.save(str(output_path))
@@ -284,6 +353,12 @@ class EditorSession:
         buf = io.BytesIO()
         self.doc.save(buf)
         return buf.getvalue()
+
+    def __enter__(self) -> "EditorSession":
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
+        self.close()
 
     def close(self):
         try:
