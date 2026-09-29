@@ -1,4 +1,5 @@
 from .engine import PdfEngine
+from .editor import EditorSession, ShapeType, AnnotationType
 from .models import (
     CompressLevel,
     Metadata,
@@ -9,6 +10,9 @@ from .models import (
 
 __all__ = [
     "PdfEngine",
+    "EditorSession",
+    "ShapeType",
+    "AnnotationType",
     "CompressLevel",
     "Metadata",
     "PageRange",
