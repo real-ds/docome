@@ -1,4 +1,12 @@
 from .engine import ConversionEngine
-from .reconstruction import pdf_to_docx_hq, HighFidelityPdfToDocx
+from .fidelity import ConversionFidelity, FidelityReport, evaluate
+from .reconstruction import HighFidelityPdfToDocx, pdf_to_docx_hq
 
-__all__ = ["ConversionEngine", "pdf_to_docx_hq", "HighFidelityPdfToDocx"]
+__all__ = [
+    "ConversionEngine",
+    "ConversionFidelity",
+    "FidelityReport",
+    "HighFidelityPdfToDocx",
+    "evaluate",
+    "pdf_to_docx_hq",
+]

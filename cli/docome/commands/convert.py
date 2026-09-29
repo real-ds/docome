@@ -1,13 +1,15 @@
+import json
 import sys
 from pathlib import Path
 from typing import Optional
 
 import typer
 from rich.console import Console
+from rich.table import Table
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
-from packages.conversion_engine import ConversionEngine, pdf_to_docx_hq
+from packages.conversion_engine import ConversionEngine, evaluate, pdf_to_docx_hq
 
 convert_app = typer.Typer(help="Document conversion operations")
 console = Console()
@@ -52,6 +54,39 @@ def pdf2docx_hq_cmd(
     pdf_to_docx_hq(input, output)
     
     console.print(f"[green]High-fidelity DOCX saved to: {output}[/green]")
+
+
+@convert_app.command("fidelity")
+def fidelity(
+    input: str = typer.Argument(..., help="Source PDF file"),
+    output: str = typer.Option(..., "-o", "--output", help="Converted DOCX file to score"),
+    as_json: bool = typer.Option(False, "--json", help="Print the report as JSON"),
+):
+    """Score how faithfully a DOCX reproduces its source PDF."""
+    report = evaluate(input, output)
+
+    if as_json:
+        console.print_json(json.dumps(report.as_dict()))
+        raise typer.Exit(code=0 if report.passed else 1)
+
+    table = Table(title="Conversion Fidelity", show_lines=True)
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    table.add_row("Pages", f"{report.output_sections}/{report.source_pages} [green]ok[/green]" if report.page_count_preserved else f"{report.output_sections}/{report.source_pages} [red]mismatch[/red]")
+    table.add_row("Text retention", f"{report.text_retention:.1%}")
+    table.add_row("Font retention", f"{report.font_retention:.1%}")
+    table.add_row("Tables", f"{report.tables_output}/{report.tables_source}")
+    table.add_row("Images", f"{report.images_output}/{report.images_source}")
+    table.add_row("Hyperlinks", f"{report.hyperlinks_output}/{report.hyperlinks_source}")
+    table.add_row("Score", f"{report.score:.1%}")
+    console.print(table)
+
+    if report.missing_text:
+        console.print(f"[yellow]Missing text: {', '.join(report.missing_text[:10])}[/yellow]")
+    if report.missing_fonts:
+        console.print(f"[yellow]Missing fonts: {', '.join(report.missing_fonts[:10])}[/yellow]")
+
+    raise typer.Exit(code=0 if report.passed else 1)
 
 
 @convert_app.command("xlsx2pdf")

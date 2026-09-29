@@ -70,6 +70,7 @@ class TableCell:
     x1: float
     y1: float
     text: str
+    font: Optional[FontInfo] = None
 
 
 @dataclass
@@ -183,6 +184,21 @@ class FontMapper:
         return ((value >> 16) & 0xFF, (value >> 8) & 0xFF, value & 0xFF)
 
 
+def font_from_spans(spans: Sequence[dict], line_height_factor: float = 1.9) -> FontInfo:
+    primary = max(spans, key=lambda span: len(span.get("text", "").strip()))
+    pdf_font_name = primary.get("font", "Helvetica")
+    size = float(primary.get("size", 12.0))
+    return FontInfo(
+        name=FontMapper.map_font(pdf_font_name),
+        size=size,
+        bold=FontMapper.is_bold(primary.get("flags", 0), pdf_font_name),
+        italic=FontMapper.is_italic(primary.get("flags", 0), pdf_font_name),
+        color=FontMapper.color_to_rgb(primary.get("color", 0)),
+        font_id=pdf_font_name,
+        line_height=size * line_height_factor,
+    )
+
+
 class ListDetector:
     BULLET_PATTERN = re.compile(r"^([\u2022\u2023\u2043\u2219\u25cf\u25aa\u25e6\u25c6\u25b8\u00b7*+\-\u2013\u2014])\s+(.*)$")
     NUMBER_PATTERN = re.compile(r"^(\(?\d{1,3}[.)]|\(?[a-zA-Z][.)]|\(?[ivxlcdmIVXLCDM]{1,6}[.)])\s+(.*)$")
@@ -234,7 +250,7 @@ class TextBlockDetector:
                 if not text.strip():
                     continue
 
-                font = self._font_from_spans(spans)
+                font = font_from_spans(spans, self.line_height_factor)
                 bbox = line.get("bbox") or (0, 0, 0, 0)
                 lines.append(TextBlock(
                     x0=bbox[0], y0=bbox[1], x1=bbox[2], y1=bbox[3],
@@ -287,18 +303,7 @@ class TextBlockDetector:
         return True
 
     def _font_from_spans(self, spans: Sequence[dict]) -> FontInfo:
-        primary = max(spans, key=lambda span: len(span.get("text", "").strip()))
-        pdf_font_name = primary.get("font", "Helvetica")
-        size = float(primary.get("size", 12.0))
-        return FontInfo(
-            name=FontMapper.map_font(pdf_font_name),
-            size=size,
-            bold=FontMapper.is_bold(primary.get("flags", 0), pdf_font_name),
-            italic=FontMapper.is_italic(primary.get("flags", 0), pdf_font_name),
-            color=FontMapper.color_to_rgb(primary.get("color", 0)),
-            font_id=pdf_font_name,
-            line_height=size * self.line_height_factor,
-        )
+        return font_from_spans(spans, self.line_height_factor)
 
 
 class ColumnDetector:
@@ -400,6 +405,7 @@ class TableDetector:
         except Exception:
             return []
 
+        line_fonts = self._line_fonts(page)
         tables: List[Table] = []
         for item in found.tables:
             data = item.extract()
@@ -411,14 +417,36 @@ class TableDetector:
                 continue
 
             bbox = item.bbox
-            cells = self._build_cells(data, item)
+            cells = self._build_cells(data, item, line_fonts)
             tables.append(Table(
                 x0=bbox[0], y0=bbox[1], x1=bbox[2], y1=bbox[3],
                 rows=len(data), cols=columns, cells=cells,
             ))
         return tables
 
-    def _build_cells(self, data: Sequence[Sequence[Optional[str]]], item) -> List[List[TableCell]]:
+    def _line_fonts(self, page: pymupdf.Page) -> List[Tuple[Tuple[float, float, float, float], FontInfo]]:
+        raw = page.get_text("dict", flags=pymupdf.TEXTFLAGS_DICT)
+        items: List[Tuple[Tuple[float, float, float, float], FontInfo]] = []
+        for block in raw.get("blocks", []):
+            if block.get("type") != 0:
+                continue
+            for line in block.get("lines", []):
+                spans = line.get("spans", [])
+                if not spans or not any(span.get("text", "").strip() for span in spans):
+                    continue
+                items.append((tuple(line.get("bbox") or (0, 0, 0, 0)), font_from_spans(spans)))
+        return items
+
+    def _font_in_rect(self, rect: Tuple[float, float, float, float], line_fonts) -> Optional[FontInfo]:
+        if rect == (0.0, 0.0, 0.0, 0.0):
+            return None
+        center = ((rect[0] + rect[2]) / 2, (rect[1] + rect[3]) / 2)
+        for bbox, font in line_fonts:
+            if bbox[0] <= center[0] <= bbox[2] and bbox[1] <= center[1] <= bbox[3]:
+                return font
+        return None
+
+    def _build_cells(self, data: Sequence[Sequence[Optional[str]]], item, line_fonts) -> List[List[TableCell]]:
         cells: List[List[TableCell]] = []
         for row_index, row in enumerate(data):
             rects = self._row_rects(item, row_index)
@@ -428,6 +456,7 @@ class TableDetector:
                 built_row.append(TableCell(
                     x0=rect[0], y0=rect[1], x1=rect[2], y1=rect[3],
                     text=(value or "").strip(),
+                    font=self._font_in_rect(rect, line_fonts),
                 ))
             cells.append(built_row)
         return cells
@@ -597,7 +626,18 @@ class DocxBuilder:
                 for paragraph in target.paragraphs:
                     paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
                     for run in paragraph.runs:
-                        run.font.size = Pt(10)
+                        self._apply_cell_font(run, cell.font)
+
+    def _apply_cell_font(self, run, font: Optional[FontInfo]) -> None:
+        if font is None:
+            run.font.name = "Arial"
+            run.font.size = Pt(10)
+            return
+        run.font.name = font.name
+        run.font.size = Pt(font.size)
+        run.font.bold = font.bold
+        run.font.italic = font.italic
+        run.font.color.rgb = RGBColor(*font.color)
 
     def add_image(self, image: ImageBlock) -> None:
         width_pt = image.x1 - image.x0

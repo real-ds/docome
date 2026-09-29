@@ -5,6 +5,9 @@ All notable changes to Docome will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Automated conversion fidelity harness (`packages/conversion_engine/fidelity.py`) scoring page count, text, fonts, tables, images, and hyperlinks
+- CLI: `docome convert fidelity input.pdf -o output.docx` with table and `--json` output, exiting non-zero on threshold failure
+- Per-cell font capture so table text keeps its family, size, weight, and color
 - High-fidelity PDF to DOCX reconstruction (`docome convert pdf2docx-hq`)
 - Paragraph reconstruction by merging wrapped lines with matching fonts
 - Font mapping to real families (Arial, Times New Roman, Courier New, Symbol, Wingdings) with size, bold, italic, and color
