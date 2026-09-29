@@ -5,6 +5,10 @@ All notable changes to Docome will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- REST API: `POST /api/v1/edit/apply` and `GET /api/v1/edit/actions` exposing the same edit-plan engine as the CLI
+- REST API: `POST /api/v1/convert/pdf2docx-hq` and `POST /api/v1/convert/fidelity`
+- `apps/api/app/core/workspace.py` for cross-platform, self-cleaning temp workspaces and filename sanitization
+- Pydantic request models for edit plans with per-field validation and size limits
 - Multi-step edit plans: apply a JSON list of operations in one session (`packages/pdf_engine/edit_plan.py`)
 - CLI: `docome edit apply --plan`, `docome edit undo --times`, and `docome edit actions`
 - Plan validation with the failing operation index reported, and non-zero exit on failure
@@ -25,11 +29,17 @@ All notable changes to Docome will be documented in this file.
 - Alignment inference (left, right, center) from page geometry
 
 ### Fixed
+- API file responses are now returned as in-memory bytes, so downloads no longer depend on temp files that are deleted before the body is streamed
+- Uploads are written to a separate input directory, so an upload named `input.pdf` no longer collides with its own output path and fail with "save to original must be incremental"
+- Uploaded filenames are sanitized, so `../../etc/passwd.pdf` cannot escape the workspace
 - `delete_text` painted a white overlay instead of removing text; it now uses redactions so deleted content no longer extracts, copies, or searches
 - `replace_text` left the original text in the content stream for the same reason
 - Bold and italic span flags were swapped (bold is flag 16, italic is flag 2)
 - Hyperlink writer used a nonexistent `Run.hyperlink` API and silently produced plain text
 - Stale column indices leaked between detection passes
+
+### Known Issues
+- The pre-existing conversion and PDF routes in `apps/api/app/main.py` still hardcode `/tmp` paths, so they fail on Windows. They are not covered by tests yet.
 
 ## [0.1.0] - 2024
 

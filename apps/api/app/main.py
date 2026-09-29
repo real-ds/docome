@@ -8,11 +8,18 @@ from pydantic import BaseModel
 
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "packages"))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from pdf_engine import PdfEngine, CompressLevel, Metadata, PageRange, Rotation
 from conversion_engine import ConversionEngine
 
+from app.api.routes.conversion import router as conversion_router
+from app.api.routes.editing import router as editing_router
+
 app = FastAPI(title="Docome API", version="0.1.0")
+
+app.include_router(conversion_router)
+app.include_router(editing_router)
 
 pdf_engine = PdfEngine()
 conversion_engine = ConversionEngine()
