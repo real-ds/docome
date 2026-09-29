@@ -49,6 +49,26 @@
 - undo/redo
 - save/export
 
+### Status
+
+Engine, CLI, and REST API are complete for: page thumbnails, element
+selection and hit testing, text editing and true deletion, image editing,
+shapes, annotations, undo/redo, and save/export. Each is exposed by all
+three surfaces through the shared packages, never by duplicated logic.
+
+Still open:
+
+- PDF.js viewer in the web app. It should consume the element and
+  thumbnail endpoints already available rather than reimplementing
+  document processing.
+- DOCX → PDF does not yet reproduce installed Windows fonts exactly and
+  does not render DOCX headers, footers, or footnotes.
+- `move` and `resize` relocate a region by redaction plus a rasterized
+  copy, so moved text is no longer selectable or searchable afterwards.
+  Moving text as real text is the natural follow-up.
+- Pixel-level round-trip verification is blocked on LibreOffice or Word
+  being installed in the test environment.
+
 ## Phase 4 — Paid/Professional
 
 - e-signature
