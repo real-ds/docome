@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docome</title>
+<style>
+@font-face {
+  font-family: 'SF Pro Display';
+  src: local('SF Pro Display'), local('SFProDisplay-Regular');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'SF Pro Display';
+  src: local('SF Pro Display Semibold'), local('SFProDisplay-Semibold');
+  font-weight: 600;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'SF Pro Display';
+  src: local('SF Pro Display Bold'), local('SFProDisplay-Bold');
+  font-weight: 700;
+  font-style: normal;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #0a0a0b;
+  --surface: #111113;
+  --border: #1e1e22;
+  --text-primary: #f5f5f7;
+  --text-secondary: #86868b;
+  --accent-1: #bf5af2;
+  --accent-2: #5e5ce6;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.cursor-glow {
+  position: fixed;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle, rgba(191,90,242,0.06) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  transition: opacity 0.3s;
+}
+
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 20px 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(10,10,11,0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-logo {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+}
+
+.nav-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 400;
+  transition: color 0.2s;
+  letter-spacing: -0.01em;
+}
+
+.nav-links a:hover {
+  color: var(--text-primary);
+}
+
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 120px 48px 80px;
+  position: relative;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+  letter-spacing: -0.01em;
+  cursor: default;
+  transition: border-color 0.3s;
+}
+
+.hero-badge:hover {
+  border-color: var(--accent-1);
+}
+
+.hero-badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-1);
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.hero h1 {
+  font-size: clamp(48px, 8vw, 96px);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  margin-bottom: 24px;
+  max-width: 900px;
+}
+
+.hero h1 .gradient-text {
+  background: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero p {
+  font-size: 18px;
+  color: var(--text-secondary);
+  max-width: 520px;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+  margin-bottom: 48px;
+  font-weight: 400;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  color: #fff;
+  text-decoration: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(191,90,242,0.3);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  background: var(--surface);
+  color: var(--text-primary);
+  text-decoration: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  border: 1px solid var(--border);
+  transition: border-color 0.2s, transform 0.2s;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  border-color: var(--accent-2);
+  transform: translateY(-2px);
+}
+
+section {
+  padding: 120px 48px;
+  position: relative;
+  z-index: 1;
+}
+
+.section-label {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-1);
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: 20px;
+}
+
+.section-desc {
+  font-size: 17px;
+  color: var(--text-secondary);
+  max-width: 560px;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+  margin-bottom: 64px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 36px 32px;
+  transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-1), var(--accent-2), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(191,90,242,0.3);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+.card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  margin-bottom: 24px;
+  background: linear-gradient(135deg, rgba(191,90,242,0.12), rgba(94,92,230,0.12));
+  border: 1px solid rgba(191,90,242,0.15);
+}
+
+.card h3 {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+
+.card p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+}
+
+.stats-section {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.stat-item {
+  padding: 48px 24px;
+}
+
+.stat-number {
+  font-size: clamp(40px, 5vw, 64px);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: var(--text-secondary);
+  letter-spacing: -0.01em;
+  font-weight: 400;
+}
+
+.cli-section {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.terminal {
+  background: #0d0d0f;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.terminal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.terminal-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.terminal-dot.r { background: #ff5f57; }
+.terminal-dot.y { background: #febc2e; }
+.terminal-dot.g { background: #28c840; }
+
+.terminal-body {
+  padding: 24px;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 14px;
+  line-height: 1.8;
+  min-height: 200px;
+}
+
+.terminal-line {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.terminal-line.visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.4s ease-out;
+}
+
+.terminal-prompt {
+  color: var(--accent-1);
+}
+
+.terminal-cmd {
+  color: var(--text-primary);
+}
+
+.terminal-output {
+  color: var(--text-secondary);
+}
+
+.cursor-blink {
+  display: inline-block;
+  width: 8px;
+  height: 18px;
+  background: var(--accent-1);
+  vertical-align: text-bottom;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+footer {
+  padding: 48px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.footer-left {
+  font-size: 14px;
+  color: var(--text-secondary);
+  letter-spacing: -0.01em;
+}
+
+.footer-links {
+  display: flex;
+  gap: 24px;
+  list-style: none;
+}
+
+.footer-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s;
+  letter-spacing: -0.01em;
+}
+
+.footer-links a:hover {
+  color: var(--text-primary);
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (max-width: 900px) {
+  nav { padding: 16px 24px; }
+  .nav-links { display: none; }
+  section { padding: 80px 24px; }
+  .hero { padding: 100px 24px 60px; }
+  .grid-3 { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: 1fr; }
+  .stat-item { padding: 32px 24px; }
+  footer { flex-direction: column; gap: 24px; text-align: center; }
+  .hero-actions { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<div class="cursor-glow" id="glow"></div>
+
+<nav>
+  <div class="nav-logo">docome</div>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#cli">CLI</a></li>
+    <li><a href="https://github.com/real-ds/docome">GitHub</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge reveal">
+    <span class="dot"></span>
+    v0.1.0 released
+  </div>
+  <h1 class="reveal">Documents,<br><span class="gradient-text">handled.</span></h1>
+  <p class="reveal">Merge, split, convert, sign, and OCR your PDFs. One tool. No uploads. Everything runs on your machine.</p>
+  <div class="hero-actions reveal">
+    <a href="https://github.com/real-ds/docome/releases" class="btn-primary">Download .exe</a>
+    <a href="https://github.com/real-ds/docome" class="btn-secondary">View Source</a>
+  </div>
+</section>
+
+<section id="features">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div class="section-label reveal">Capabilities</div>
+    <h2 class="section-title reveal">What it does</h2>
+    <p class="section-desc reveal">Built on modular engines. Each operation is deterministic, scriptable, and runs locally.</p>
+  </div>
+  <div class="grid-3">
+    <div class="card reveal">
+      <div class="card-icon">&#9638;</div>
+      <h3>PDF Operations</h3>
+      <p>Merge, split, extract, remove, rotate, compress. Page-level control over any PDF document.</p>
+    </div>
+    <div class="card reveal">
+      <div class="card-icon">&#8644;</div>
+      <h3>Conversion</h3>
+      <p>PDF to DOCX, XLSX, PPTX, Markdown, plain text. And back. Preserves layout and structure.</p>
+    </div>
+    <div class="card reveal">
+      <div class="card-icon">&#9998;</div>
+      <h3>E-Signatures</h3>
+      <p>Create typed signatures, place them on documents, add form fields. Full signing workflows.</p>
+    </div>
+    <div class="card reveal">
+      <div class="card-icon">&#9673;</div>
+      <h3>OCR</h3>
+      <p>Turn scanned documents into searchable, selectable text. Tesseract and EasyOCR backends.</p>
+    </div>
+    <div class="card reveal">
+      <div class="card-icon">&#9634;</div>
+      <h3>Image Engine</h3>
+      <p>Convert images to PDF, render PDF pages as images. Batch processing built in.</p>
+    </div>
+    <div class="card reveal">
+      <div class="card-icon">&#9670;</div>
+      <h3>Security</h3>
+      <p>Password protection, AES-256 encryption, metadata editing. Your files never leave your disk.</p>
+    </div>
+  </div>
+</section>
+
+<section class="stats-section">
+  <div class="stats-grid">
+    <div class="stat-item reveal">
+      <div class="stat-number" data-target="24">0</div>
+      <div class="stat-label">Passing tests</div>
+    </div>
+    <div class="stat-item reveal">
+      <div class="stat-number" data-target="5">0</div>
+      <div class="stat-label">Processing engines</div>
+    </div>
+    <div class="stat-item reveal">
+      <div class="stat-number" data-target="3">0</div>
+      <div class="stat-label">Interfaces (CLI, GUI, API)</div>
+    </div>
+  </div>
+</section>
+
+<section id="cli">
+  <div class="cli-section">
+    <div style="text-align:center;">
+      <div class="section-label reveal">Terminal</div>
+      <h2 class="section-title reveal" style="margin-left:auto;margin-right:auto;">Scriptable by default</h2>
+      <p class="section-desc reveal" style="margin-left:auto;margin-right:auto;">Every operation available through the CLI. Pipe it, script it, automate it.</p>
+    </div>
+    <div class="terminal reveal" id="terminal">
+      <div class="terminal-header">
+        <div class="terminal-dot r"></div>
+        <div class="terminal-dot y"></div>
+        <div class="terminal-dot g"></div>
+      </div>
+      <div class="terminal-body">
+        <div class="terminal-line" data-delay="0">
+          <span class="terminal-prompt">$ </span>
+          <span class="terminal-cmd">docome pdf merge report.pdf appendix.pdf -o final.pdf</span>
+        </div>
+        <div class="terminal-line" data-delay="600">
+          <span class="terminal-output">Merging 2 files...</span>
+        </div>
+        <div class="terminal-line" data-delay="1200">
+          <span class="terminal-output">Merged PDF saved to: final.pdf</span>
+        </div>
+        <div class="terminal-line" data-delay="2000">
+          <span class="terminal-prompt">$ </span>
+          <span class="terminal-cmd">docome convert pdf2docx final.pdf -o final.docx</span>
+        </div>
+        <div class="terminal-line" data-delay="2600">
+          <span class="terminal-output">Converting final.pdf to DOCX...</span>
+        </div>
+        <div class="terminal-line" data-delay="3200">
+          <span class="terminal-output">DOCX saved to: final.docx</span>
+        </div>
+        <div class="terminal-line" data-delay="4000">
+          <span class="terminal-prompt">$ </span>
+          <span class="cursor-blink"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-left">MIT License. Built by Divyanshu Singh.</div>
+  <ul class="footer-links">
+    <li><a href="https://github.com/real-ds/docome">Source</a></li>
+    <li><a href="https://github.com/real-ds/docome/blob/main/LICENSE">License</a></li>
+    <li><a href="https://github.com/real-ds/docome/blob/main/PRIVACY.md">Privacy</a></li>
+  </ul>
+</footer>
+
+<script>
+const glow = document.getElementById('glow');
+let mouseX = 0, mouseY = 0, glowX = 0, glowY = 0;
+
+document.addEventListener('mousemove', e => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+});
+
+function animateGlow() {
+  glowX += (mouseX - glowX) * 0.08;
+  glowY += (mouseY - glowY) * 0.08;
+  glow.style.left = glowX + 'px';
+  glow.style.top = glowY + 'px';
+  requestAnimationFrame(animateGlow);
+}
+animateGlow();
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+const terminalObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const lines = entry.target.querySelectorAll('.terminal-line');
+      lines.forEach(line => {
+        const delay = parseInt(line.getAttribute('data-delay'));
+        setTimeout(() => line.classList.add('visible'), delay);
+      });
+      terminalObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.3 });
+
+const terminal = document.getElementById('terminal');
+if (terminal) terminalObserver.observe(terminal);
+
+const counterObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const el = entry.target;
+      const target = parseInt(el.getAttribute('data-target'));
+      let current = 0;
+      const step = Math.max(1, Math.floor(target / 30));
+      const interval = setInterval(() => {
+        current += step;
+        if (current >= target) {
+          current = target;
+          clearInterval(interval);
+        }
+        el.textContent = current;
+      }, 30);
+      counterObserver.unobserve(el);
+    }
+  });
+}, { threshold: 0.5 });
+
+document.querySelectorAll('.stat-number[data-target]').forEach(el => counterObserver.observe(el));
+</script>
+</body>
+</html>
