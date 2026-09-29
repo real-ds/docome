@@ -7,7 +7,7 @@ from rich.console import Console
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
-from packages.conversion_engine import ConversionEngine
+from packages.conversion_engine import ConversionEngine, pdf_to_docx_hq
 
 convert_app = typer.Typer(help="Document conversion operations")
 console = Console()
@@ -39,6 +39,19 @@ def pdf2docx(
     engine.pdf_to_docx(input, output)
     
     console.print(f"[green]DOCX saved to: {output}[/green]")
+
+
+@convert_app.command("pdf2docx-hq")
+def pdf2docx_hq_cmd(
+    input: str = typer.Argument(..., help="Input PDF file"),
+    output: str = typer.Option(..., "-o", "--output", help="Output DOCX file"),
+):
+    """Convert PDF to DOCX with high-fidelity reconstruction."""
+    console.print(f"[blue]Converting {input} to DOCX (high fidelity)...[/blue]")
+    
+    pdf_to_docx_hq(input, output)
+    
+    console.print(f"[green]High-fidelity DOCX saved to: {output}[/green]")
 
 
 @convert_app.command("xlsx2pdf")
