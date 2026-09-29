@@ -17,25 +17,9 @@ class ConversionEngine:
         input_path: Union[str, Path, bytes],
         output_path: Union[str, Path],
     ) -> None:
-        if isinstance(input_path, bytes):
-            doc = Document(io.BytesIO(input_path))
-        else:
-            doc = Document(input_path)
+        from .docx_pdf import docx_to_pdf
 
-        pdf_doc = pymupdf.open()
-
-        for para in doc.paragraphs:
-            if para.text.strip():
-                page = pdf_doc.new_page(width=595, height=842)
-                
-                text = para.text
-                for run in para.runs:
-                    pass
-
-                page.insert_text((72, 72), text, fontsize=11)
-
-        pdf_doc.save(output_path)
-        pdf_doc.close()
+        docx_to_pdf(input_path, output_path)
 
     def pdf_to_docx(
         self,

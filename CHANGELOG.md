@@ -29,6 +29,8 @@ All notable changes to Docome will be documented in this file.
 - Alignment inference (left, right, center) from page geometry
 
 ### Fixed
+- `docx_to_pdf` was a stub that created one blank A4 page per paragraph and drew plain text at a fixed offset. It now renders the real document through the MuPDF Story layout engine, preserving page size, margins, headings, fonts, sizes, bold, italic, underline, color, alignment, list markers, indents, tables with borders and shading, and embedded images, with genuine reflow and pagination. Content that cannot fit the page frame now raises a clear error instead of looping forever
+- `docx_to_pdf` read only `Document.paragraphs`, so tables and images were silently dropped. The document body is now walked in order, so mixed content keeps its sequence
 - The PDF operation routes (merge, split, extract, rotate, compress, metadata, page count) no longer hardcode `/tmp` paths, so they work on Windows. They now live in `apps/api/app/api/routes/pdf_ops.py`, use the same workspace helper as the new routes, return in-memory bytes, and are covered by tests
 - `POST /api/v1/pdf/split` returns a real ZIP when the input produces more than one part, instead of pointing at files that were already deleted
 - `POST /api/v1/pdf/extract` rejected valid input unless a page list was passed, because it tested a loop variable with `in dir()`; it now accepts either a page list or a `start`/`end` range and reports which one is missing
@@ -43,7 +45,8 @@ All notable changes to Docome will be documented in this file.
 - Stale column indices leaked between detection passes
 
 ### Known Issues
-- `POST /api/v1/convert/docx2pdf` relies on `ConversionEngine.docx_to_pdf`, which is still a naive stub. Use the HQ pipeline in the reverse direction instead.
+- DOCX to PDF rendering uses the MuPDF Story engine with Base-14 and bundled fallback fonts. Exact font matching to installed Windows fonts (Calibri, Arial) is not yet reproduced, and DOCX headers, footers, and footnotes are not rendered.
+- Pixel-level round-trip verification is still unavailable because LibreOffice or Word is not installed in the test environment.
 
 ## [0.1.0] - 2024
 
