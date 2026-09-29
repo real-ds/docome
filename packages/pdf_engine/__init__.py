@@ -1,11 +1,12 @@
+from .edit_plan import EditPlan, EditPlanError, EditPlanExecutor, EditResult, apply_edit_plan
 from .engine import PdfEngine
-from .editor import EditorSession, ShapeType, AnnotationType
+from .editor import AnnotationType, EditorSession, ShapeType
 from .models import (
     CompressLevel,
     Metadata,
     PageRange,
-    Rotation,
     PdfOperation,
+    Rotation,
 )
 
 __all__ = [
@@ -18,4 +19,9 @@ __all__ = [
     "PageRange",
     "Rotation",
     "PdfOperation",
+    "EditPlan",
+    "EditPlanError",
+    "EditPlanExecutor",
+    "EditResult",
+    "apply_edit_plan",
 ]

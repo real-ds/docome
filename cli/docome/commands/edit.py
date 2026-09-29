@@ -1,13 +1,23 @@
+import json
 import sys
 from pathlib import Path
 from typing import Optional, Tuple
 
 import typer
 from rich.console import Console
+from rich.table import Table
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
-from packages.pdf_engine import EditorSession, ShapeType, AnnotationType
+from packages.pdf_engine import (
+    AnnotationType,
+    EditPlan,
+    EditPlanError,
+    EditPlanExecutor,
+    EditorSession,
+    ShapeType,
+    apply_edit_plan,
+)
 
 edit_app = typer.Typer(help="PDF editing operations")
 console = Console()
@@ -183,3 +193,54 @@ def _parse_color(color_str: str) -> Tuple[float, float, float]:
     if len(parts) != 3:
         raise typer.BadParameter(f"Invalid color format: {color_str}. Use r,g,b")
     return (float(parts[0]), float(parts[1]), float(parts[2]))
+
+
+@edit_app.command("apply")
+def apply_plan(
+    input: str = typer.Argument(..., help="Input PDF file"),
+    output: str = typer.Option(..., "-o", "--output", help="Output file path"),
+    plan: str = typer.Option(..., "--plan", help="Path to a JSON edit plan"),
+    as_json: bool = typer.Option(False, "--json", help="Print the result as JSON"),
+):
+    """Apply a multi-step JSON edit plan in a single session."""
+    try:
+        edit_plan = EditPlan.from_file(plan)
+        result = apply_edit_plan(input, output, edit_plan)
+    except EditPlanError as error:
+        console.print(f"[red]Edit plan failed: {error}[/red]")
+        raise typer.Exit(code=1)
+    except OSError as error:
+        console.print(f"[red]Cannot read plan: {error}[/red]")
+        raise typer.Exit(code=1)
+
+    if as_json:
+        console.print_json(json.dumps(result.as_dict()))
+        return
+
+    console.print(f"[green]Applied {result.operation_count} operation(s). Saved to: {output}[/green]")
+
+
+@edit_app.command("undo")
+def undo_operations(
+    input: str = typer.Argument(..., help="Input PDF file"),
+    output: str = typer.Option(..., "-o", "--output", help="Output file path"),
+    times: int = typer.Option(1, "--times", help="Number of steps to undo"),
+):
+    """Reopen a PDF and undo the last operations from a saved edit plan."""
+    operations = [{"action": "undo", "times": times}]
+    try:
+        result = apply_edit_plan(input, output, operations)
+    except EditPlanError as error:
+        console.print(f"[red]Undo failed: {error}[/red]")
+        raise typer.Exit(code=1)
+    console.print(f"[green]Undid {times} step(s). Saved to: {output}[/green]")
+
+
+@edit_app.command("actions")
+def list_actions():
+    """List every action an edit plan can use."""
+    table = Table(title="Edit plan actions", show_lines=True)
+    table.add_column("Action")
+    for action in EditPlanExecutor().available_actions():
+        table.add_row(action)
+    console.print(table)

@@ -37,7 +37,64 @@ class TestEditorSession:
         assert len(doc) == 1
         text = doc[0].get_text()
         assert "New text" in text
+
+    def test_delete_text_removes_content(self, sample_pdf_bytes, tmp_path):
+        input_file = tmp_path / "input.pdf"
+        output_file = tmp_path / "output.pdf"
+        input_file.write_bytes(sample_pdf_bytes)
+
+        session = EditorSession(str(input_file))
+        session.delete_text(1, 60, 110, 250, 126)
+        session.save(str(output_file))
+        session.close()
+
+        doc = pymupdf.open(str(output_file))
+        text = doc[0].get_text()
         doc.close()
+        assert "Existing content" not in text
+        assert "Test Page" in text
+
+    def test_replace_text_swaps_content(self, sample_pdf_bytes, tmp_path):
+        input_file = tmp_path / "input.pdf"
+        output_file = tmp_path / "output.pdf"
+        input_file.write_bytes(sample_pdf_bytes)
+
+        session = EditorSession(str(input_file))
+        session.replace_text(1, 60, 110, 250, 126, "Replacement", fontsize=12)
+        session.save(str(output_file))
+        session.close()
+
+        doc = pymupdf.open(str(output_file))
+        text = doc[0].get_text()
+        doc.close()
+        assert "Replacement" in text
+        assert "Existing content" not in text
+
+    def test_undo_restores_deleted_text(self, sample_pdf_bytes, tmp_path):
+        input_file = tmp_path / "input.pdf"
+        input_file.write_bytes(sample_pdf_bytes)
+
+        session = EditorSession(str(input_file))
+        session.delete_text(1, 60, 110, 250, 126)
+        session.undo()
+
+        doc = pymupdf.open(stream=session.get_bytes(), filetype="pdf")
+        text = doc[0].get_text()
+        doc.close()
+        session.close()
+        assert "Existing content" in text
+
+    def test_page_count_and_history_depth(self, sample_pdf_bytes, tmp_path):
+        input_file = tmp_path / "input.pdf"
+        input_file.write_bytes(sample_pdf_bytes)
+
+        session = EditorSession(str(input_file))
+        assert session.page_count == 1
+        assert session.undo_depth == 0
+        session.add_text(1, 10, 10, "A")
+        assert session.undo_depth == 1
+        assert session.redo_depth == 0
+        session.close()
 
     def test_add_image(self, sample_pdf_bytes, tmp_path):
         input_file = tmp_path / "input.pdf"

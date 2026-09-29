@@ -40,6 +40,18 @@ class EditorSession:
         self._position: int = -1
         self._save_snapshot()
 
+    @property
+    def undo_depth(self) -> int:
+        return self._position
+
+    @property
+    def redo_depth(self) -> int:
+        return max(0, len(self._snapshots) - 1 - self._position)
+
+    @property
+    def page_count(self) -> int:
+        return len(self.doc)
+
     def _save_snapshot(self):
         buf = io.BytesIO()
         self.doc.save(buf)
@@ -97,10 +109,12 @@ class EditorSession:
             raise ValueError(f"Invalid page: {page}")
         pdf_page = self.doc[page - 1]
         rect = pymupdf.Rect(x0, y0, x1, y1)
-        shapes = pdf_page.new_shape()
-        shapes.draw_rect(rect)
-        shapes.finish(color=(1, 1, 1), fill=(1, 1, 1))
-        shapes.commit(overlay=True)
+        pdf_page.add_redact_annot(rect, fill=(1, 1, 1))
+        pdf_page.apply_redactions(
+            images=pymupdf.PDF_REDACT_IMAGE_NONE,
+            graphics=pymupdf.PDF_REDACT_LINE_ART_NONE,
+            text=pymupdf.PDF_REDACT_TEXT_REMOVE,
+        )
         self._truncate_and_save()
 
     def replace_text(
