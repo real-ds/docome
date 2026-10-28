@@ -1,708 +1,467 @@
-<!DOCTYPE html>
+Claude
+
+
+Docome full landing · HTML
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Docome</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F3EDE2">
+<meta name="description" content="Docome makes everyday document work simple. Convert, organize, and secure your files on your machine.">
+<title>docome. Documents, your way.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <style>
-@font-face {
-  font-family: 'SF Pro Display';
-  src: local('SF Pro Display'), local('SFProDisplay-Regular');
-  font-weight: 400;
-  font-style: normal;
+:root{
+  --ink:#2B2B2B; --deep:#100d0b; --cream:#f6efe3; --sand:#f3e6d0; --paper:#F3EDE2; --card:#FAF7F0;
+  --muted:#6c6962; --line:#D8D1C7; --rose:#B44446; --rose-l:#FC8F8F;
+  --serif:"Instrument Serif",Georgia,"Times New Roman",serif;
+  --sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:ui-monospace,Consolas,"Liberation Mono",monospace;
+  --s:clamp(66px,6.6vw,94px);
+  color-scheme:light;
 }
-@font-face {
-  font-family: 'SF Pro Display';
-  src: local('SF Pro Display Semibold'), local('SFProDisplay-Semibold');
-  font-weight: 600;
-  font-style: normal;
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(84px + env(safe-area-inset-top,0px));background:var(--deep)}
+body{margin:0;background:var(--paper);font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+a:focus-visible,button:focus-visible{outline:2px solid var(--rose);outline-offset:3px}
+.wrap{width:min(1160px,calc(100% - 64px));margin-inline:auto}
+h1,h2,h3{text-wrap:balance}
+p{text-wrap:pretty}
+ 
+/* shared: file icon + shimmer */
+.ico{--w:calc(var(--s)*.42);position:relative;width:var(--w);aspect-ratio:4/5;display:grid;place-items:center;background:var(--c);color:#fff;
+  font:700 calc(var(--w)*.36)/1 var(--sans);letter-spacing:-.02em;clip-path:polygon(0 0,70% 0,100% 24%,100% 100%,0 100%);border-radius:3px;
+  box-shadow:inset 0 -8px 12px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.4);transition:transform .35s}
+.ico::before{content:"";position:absolute;top:0;right:0;width:30%;aspect-ratio:1;background:linear-gradient(to bottom left,transparent 50%,rgba(255,255,255,.5) 50%)}
+.sheen::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.55) 50%,transparent 65%);background-size:250% 100%;background-position:130% 0}
+.sheen:hover::after{animation:sweep .9s ease-out}
+@keyframes sweep{0%{background-position:130% 0;opacity:0}15%{opacity:1}85%{opacity:1}100%{background-position:-30% 0;opacity:0}}
+ 
+/* header */
+header{position:fixed;inset:0 0 auto;z-index:20;padding-top:env(safe-area-inset-top,0px);transition:background .3s,border-color .3s;border-bottom:1px solid transparent;color:var(--cream)}
+header.scrolled{background:rgba(243,237,226,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom-color:rgba(43,43,43,.12);color:var(--ink)}
+.nav{height:78px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.logo{font-family:var(--serif);font-size:2rem;text-decoration:none;letter-spacing:-.01em}
+.links{display:flex;gap:clamp(18px,2.6vw,38px);margin-left:auto;margin-right:12px}
+.links a{text-decoration:none;font-size:.92rem;font-weight:500;opacity:.85;transition:opacity .2s}
+.links a:hover{opacity:1}
+.pill{position:relative;overflow:hidden;display:inline-flex;align-items:center;height:42px;padding:0 22px;border-radius:99px;background:var(--sand);color:#1b1511;font-weight:500;font-size:.9rem;text-decoration:none;transition:background .3s,color .3s}
+header.scrolled .pill{background:var(--ink);color:var(--paper)}
+.menu{display:none;width:42px;height:42px;border:1px solid currentColor;border-radius:50%;background:none;color:inherit;cursor:pointer;padding:0;place-items:center}
+.menu span{display:block;width:16px;height:1.5px;background:currentColor;margin:2.5px auto}
+ 
+/* hero */
+.hero{position:relative;overflow:hidden;isolation:isolate;
+  min-height:100svh;display:grid;place-items:center;
+  background:linear-gradient(180deg,#100d0b 0%,#1a1512 34%,#3a2e26 58%,#8c7762 78%,#F3EDE2 100%);color:var(--cream)}
+.spot{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:0;transition:opacity .5s;
+  background:radial-gradient(440px circle at var(--mx,50%) var(--my,50%),rgba(255,214,170,.13),transparent 62%)}
+.hero.on .spot{opacity:1}
+#net{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+#nodes{position:absolute;inset:0;z-index:2}
+.copy{position:relative;z-index:3;text-align:center;padding:100px 20px 120px;pointer-events:none}
+h1{margin:0;font-family:var(--serif);font-weight:400;font-size:clamp(3.4rem,10.4vw,8.6rem);line-height:.93;letter-spacing:-.025em;text-shadow:0 6px 40px rgba(0,0,0,.35)}
+h1 .soft{background:linear-gradient(100deg,#d8c9b1,#8f8068);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
+.sub{margin:clamp(18px,2.4vw,30px) auto 0;max-width:36ch;font-size:clamp(1rem,1.55vw,1.3rem);line-height:1.5;color:rgba(246,239,227,.86)}
+.cta-row{margin-top:clamp(26px,3.4vw,44px);display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn{pointer-events:auto;position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:12px;height:54px;padding:0 30px;border-radius:99px;font:500 1rem var(--sans);text-decoration:none;transition:transform .25s,background .25s,border-color .25s,color .25s}
+.btn:hover{transform:translateY(-2px)}
+.btn.main{background:var(--sand);color:#1b1511}
+.btn.main:hover{background:#fff3df}
+.btn.ghost{color:var(--cream);border:1px solid rgba(246,239,227,.34);background:rgba(20,15,12,.18);backdrop-filter:blur(6px)}
+.btn.ghost:hover{background:rgba(255,255,255,.1);border-color:rgba(246,239,227,.6)}
+.btn svg{transition:transform .25s}
+.btn:hover svg{transform:translateX(4px)}
+.cue{position:absolute;z-index:3;bottom:22px;left:50%;width:18px;height:46px;margin-left:-9px;display:flex;flex-direction:column;align-items:center;color:#3a2e26;animation:bob 2.6s ease-in-out infinite}
+.cue i{display:block;width:1px;flex:1;background:currentColor}
+@keyframes bob{50%{transform:translateY(6px)}}
+ 
+.node{position:absolute;left:0;top:0;padding:0;border:0;background:none;color:inherit;font:inherit;cursor:pointer;will-change:transform;-webkit-tap-highlight-color:transparent}
+.node[hidden]{display:none}
+.node:focus-visible{outline:none}
+.tile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--s)*.08);
+  width:var(--s);height:calc(var(--s)*1.04);border-radius:24%;
+  background:linear-gradient(160deg,rgba(60,50,44,.62),rgba(28,22,19,.55));border:1px solid rgba(255,240,220,.16);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  box-shadow:0 18px 34px -10px rgba(30,18,8,.55),inset 0 1px 0 rgba(255,244,228,.2);
+  transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s,border-color .35s,filter .35s,opacity .35s;
+  animation:in .9s cubic-bezier(.2,.7,.2,1) backwards;animation-delay:calc(var(--i)*70ms + 250ms)}
+.node.far .tile{filter:blur(1.2px);opacity:.75}
+.node:hover .tile,.node:focus-visible .tile{transform:translateY(-5px) scale(1.1);border-color:rgba(255,226,190,.55);filter:none;opacity:1;
+  box-shadow:0 26px 44px -12px rgba(30,18,8,.6),0 0 0 1px rgba(255,226,190,.18),0 0 38px rgba(255,200,140,.28),inset 0 1px 0 rgba(255,244,228,.35)}
+.node:focus-visible .tile{outline:2px solid var(--sand);outline-offset:3px}
+.node:active .tile{transform:scale(.97)}
+.tile::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
+  background:linear-gradient(105deg,transparent 33%,rgba(255,244,225,.62) 50%,transparent 67%);background-size:250% 100%;background-position:130% 0}
+.node:hover .tile::after,.node:focus-visible .tile::after,.tile.shine::after{animation:sweep .95s ease-out}
+.tile::before{content:"";position:absolute;inset:-1px;border-radius:inherit;border:1.5px solid rgba(255,214,160,.8);opacity:0;pointer-events:none}
+.tile.ring::before{animation:ring .9s ease-out}
+.node:hover .ico{transform:translateY(-2px) rotate(-3deg)}
+.lb{font:600 max(9px,calc(var(--s)*.135))/1 var(--sans);letter-spacing:.06em;color:rgba(246,239,227,.9)}
+@keyframes ring{0%{transform:scale(1);opacity:.9}100%{transform:scale(1.9);opacity:0}}
+@keyframes in{from{opacity:0;transform:scale(.6)}}
+ 
+/* capabilities strip */
+.strip{background:var(--paper);border-bottom:1px solid var(--line);padding:26px 0}
+.strip .wrap{display:flex;align-items:center;justify-content:space-between;gap:14px 28px;flex-wrap:wrap}
+.strip .lead{font-size:.95rem;color:var(--muted)}
+.strip b{font-weight:600;font-size:1rem;letter-spacing:-.01em}
+ 
+/* sections */
+section{padding:clamp(72px,9vw,120px) 0}
+.kicker{font-size:.95rem;font-weight:600;color:var(--rose);margin-bottom:14px}
+h2{margin:0;font-family:var(--serif);font-weight:400;font-size:clamp(2.7rem,6vw,4.9rem);line-height:.98;letter-spacing:-.02em}
+.head{display:grid;grid-template-columns:1.1fr .9fr;gap:50px;align-items:end;margin-bottom:48px}
+.head p{margin:0;max-width:440px;font-size:1.05rem;line-height:1.7;color:var(--muted)}
+ 
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;gap:46px;min-height:280px;padding:28px;
+  background:var(--card);border:1px solid var(--line);border-radius:24px;transition:transform .3s,border-color .3s,box-shadow .3s}
+.card:hover{transform:translateY(-5px);border-color:var(--rose);box-shadow:0 22px 40px -18px rgba(100,36,47,.3)}
+.card::after{background:linear-gradient(105deg,transparent 35%,rgba(252,143,143,.28) 50%,transparent 65%);background-size:250% 100%}
+.flow{display:flex;align-items:center;gap:12px;--s:90px;min-height:50px}
+.flow .ico{--w:38px}
+.card:hover .ico{transform:translateY(-3px) rotate(-3deg)}
+.flow .sym{font-size:1.1rem;color:var(--muted)}
+.flow .chip{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--rose);color:#fff}
+.card h3{margin:0 0 10px;font-size:1.45rem;font-weight:600;letter-spacing:-.025em;line-height:1.15}
+.card p{margin:0;font-size:.95rem;line-height:1.65;color:var(--muted)}
+ 
+.local{background:var(--ink);color:var(--paper)}
+.local .wrap{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}
+.local .kicker{color:var(--rose-l)}
+.local p.lede{margin:24px 0 0;max-width:470px;font-size:1.1rem;line-height:1.7;color:#d0c8bd}
+.term{border:1px solid rgba(243,237,226,.2);border-radius:20px;background:#201f1d;overflow:hidden}
+.term-head{display:flex;align-items:center;gap:7px;padding:14px 18px;border-bottom:1px solid rgba(243,237,226,.14);font:12px var(--mono);color:#b8b0a6}
+.term-head i{width:9px;height:9px;border-radius:50%;background:#4a4540}
+.term pre{margin:0;padding:24px 22px;font:13px/1.95 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere}
+.cmd{color:var(--rose-l)}.out{color:#e4ded4}.ok{color:#b9d1b0}
+.term small{display:block;padding:0 22px 22px;font-size:.85rem;line-height:1.6;color:#b8b0a6}
+ 
+.flowgrid{display:grid;grid-template-columns:.85fr 1.15fr;gap:80px}
+.flowgrid .intro p{margin:24px 0 0;max-width:390px;font-size:1.05rem;line-height:1.7;color:var(--muted)}
+.step{display:grid;grid-template-columns:64px 1fr;gap:12px;padding:26px 0;border-bottom:1px solid var(--line)}
+.step:first-child{border-top:1px solid var(--line)}
+.step b{font:400 2.6rem/1 var(--serif);color:var(--rose)}
+.step h3{margin:6px 0 8px;font-size:1.25rem;font-weight:600;letter-spacing:-.02em}
+.step p{margin:0;max-width:480px;font-size:.98rem;line-height:1.65;color:var(--muted)}
+ 
+.final{padding-top:0}
+.panel{display:flex;align-items:center;justify-content:space-between;gap:36px;padding:clamp(32px,5vw,60px);border-radius:32px;background:#E7DCCB}
+.panel h2{font-size:clamp(2.6rem,5.2vw,4.3rem);max-width:640px}
+.panel p{margin:18px 0 0;max-width:470px;font-size:1.05rem;line-height:1.65;color:#55514b}
+.panel .acts{display:flex;flex-direction:column;gap:12px;min-width:210px}
+.panel .btn{justify-content:center}
+.panel .btn.main{background:var(--rose);color:#fff}
+.panel .btn.main:hover{background:#c85b5d}
+.panel .btn.ghost{color:var(--ink);border-color:var(--ink);background:none}
+.panel .btn.ghost:hover{background:rgba(255,255,255,.4)}
+.sheen.btn::after{pointer-events:none}
+ 
+footer{border-top:1px solid var(--line);padding:28px 0 calc(32px + env(safe-area-inset-bottom,0px))}
+footer .wrap{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+footer .logo{font-size:1.7rem}
+footer small{display:block;margin-top:4px;color:var(--muted);font-size:.85rem}
+footer nav{display:flex;gap:22px}
+footer nav a{font-size:.9rem;color:var(--muted);text-decoration:none}
+footer nav a:hover{color:var(--rose)}
+ 
+@media (max-width:960px){.grid{grid-template-columns:1fr 1fr}.head,.local .wrap,.flowgrid{grid-template-columns:1fr;gap:34px}.panel{flex-direction:column;align-items:flex-start}.panel .acts{flex-direction:row;flex-wrap:wrap;min-width:0}}
+@media (max-width:760px){
+  .wrap{width:calc(100% - 40px)}
+  .menu{display:grid}
+  .links{display:none;position:absolute;top:100%;left:0;right:0;margin:0;flex-direction:column;gap:0;padding:8px 20px 20px;background:rgba(243,237,226,.97);color:var(--ink);border-bottom:1px solid var(--line)}
+  .links.open{display:flex}
+  .links a{padding:15px 0;border-bottom:1px solid var(--line);opacity:1}
+  .nav{gap:10px}.pill{margin-left:auto}
 }
-@font-face {
-  font-family: 'SF Pro Display';
-  src: local('SF Pro Display Bold'), local('SFProDisplay-Bold');
-  font-weight: 700;
-  font-style: normal;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-:root {
-  --bg: #0a0a0b;
-  --surface: #111113;
-  --border: #1e1e22;
-  --text-primary: #f5f5f7;
-  --text-secondary: #86868b;
-  --accent-1: #bf5af2;
-  --accent-2: #5e5ce6;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--bg);
-  color: var(--text-primary);
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-.cursor-glow {
-  position: fixed;
-  width: 600px;
-  height: 600px;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 0;
-  background: radial-gradient(circle, rgba(191,90,242,0.06) 0%, transparent 70%);
-  transform: translate(-50%, -50%);
-  transition: opacity 0.3s;
-}
-
-nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  padding: 20px 48px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(10,10,11,0.8);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-}
-
-.nav-logo {
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.nav-links {
-  display: flex;
-  gap: 32px;
-  list-style: none;
-}
-
-.nav-links a {
-  color: var(--text-secondary);
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 400;
-  transition: color 0.2s;
-  letter-spacing: -0.01em;
-}
-
-.nav-links a:hover {
-  color: var(--text-primary);
-}
-
-.hero {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding: 120px 48px 80px;
-  position: relative;
-}
-
-.hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 16px;
-  border-radius: 100px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  font-size: 13px;
-  color: var(--text-secondary);
-  margin-bottom: 32px;
-  letter-spacing: -0.01em;
-  cursor: default;
-  transition: border-color 0.3s;
-}
-
-.hero-badge:hover {
-  border-color: var(--accent-1);
-}
-
-.hero-badge .dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent-1);
-  animation: pulse-dot 2s infinite;
-}
-
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-
-.hero h1 {
-  font-size: clamp(48px, 8vw, 96px);
-  font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: -0.04em;
-  margin-bottom: 24px;
-  max-width: 900px;
-}
-
-.hero h1 .gradient-text {
-  background: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.hero p {
-  font-size: 18px;
-  color: var(--text-secondary);
-  max-width: 520px;
-  line-height: 1.6;
-  letter-spacing: -0.01em;
-  margin-bottom: 48px;
-  font-weight: 400;
-}
-
-.hero-actions {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-}
-
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 28px;
-  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
-  color: #fff;
-  text-decoration: none;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  transition: transform 0.2s, box-shadow 0.2s;
-  border: none;
-  cursor: pointer;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(191,90,242,0.3);
-}
-
-.btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 28px;
-  background: var(--surface);
-  color: var(--text-primary);
-  text-decoration: none;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  border: 1px solid var(--border);
-  transition: border-color 0.2s, transform 0.2s;
-  cursor: pointer;
-}
-
-.btn-secondary:hover {
-  border-color: var(--accent-2);
-  transform: translateY(-2px);
-}
-
-section {
-  padding: 120px 48px;
-  position: relative;
-  z-index: 1;
-}
-
-.section-label {
-  font-size: 13px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--accent-1);
-  margin-bottom: 16px;
-}
-
-.section-title {
-  font-size: clamp(32px, 4vw, 52px);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-  margin-bottom: 20px;
-}
-
-.section-desc {
-  font-size: 17px;
-  color: var(--text-secondary);
-  max-width: 560px;
-  line-height: 1.6;
-  letter-spacing: -0.01em;
-  margin-bottom: 64px;
-}
-
-.grid-3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 36px 32px;
-  transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
-  cursor: default;
-  position: relative;
-  overflow: hidden;
-}
-
-.card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--accent-1), var(--accent-2), transparent);
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(191,90,242,0.3);
-  box-shadow: 0 16px 48px rgba(0,0,0,0.4);
-}
-
-.card:hover::before {
-  opacity: 1;
-}
-
-.card-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  margin-bottom: 24px;
-  background: linear-gradient(135deg, rgba(191,90,242,0.12), rgba(94,92,230,0.12));
-  border: 1px solid rgba(191,90,242,0.15);
-}
-
-.card h3 {
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  margin-bottom: 10px;
-}
-
-.card p {
-  font-size: 14px;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  letter-spacing: -0.01em;
-}
-
-.stats-section {
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-  text-align: center;
-}
-
-.stat-item {
-  padding: 48px 24px;
-}
-
-.stat-number {
-  font-size: clamp(40px, 5vw, 64px);
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  line-height: 1;
-  margin-bottom: 12px;
-}
-
-.stat-label {
-  font-size: 14px;
-  color: var(--text-secondary);
-  letter-spacing: -0.01em;
-  font-weight: 400;
-}
-
-.cli-section {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.terminal {
-  background: #0d0d0f;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  overflow: hidden;
-  max-width: 720px;
-  margin: 0 auto;
-}
-
-.terminal-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
-}
-
-.terminal-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-}
-
-.terminal-dot.r { background: #ff5f57; }
-.terminal-dot.y { background: #febc2e; }
-.terminal-dot.g { background: #28c840; }
-
-.terminal-body {
-  padding: 24px;
-  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-  font-size: 14px;
-  line-height: 1.8;
-  min-height: 200px;
-}
-
-.terminal-line {
-  opacity: 0;
-  transform: translateY(8px);
-}
-
-.terminal-line.visible {
-  opacity: 1;
-  transform: translateY(0);
-  transition: all 0.4s ease-out;
-}
-
-.terminal-prompt {
-  color: var(--accent-1);
-}
-
-.terminal-cmd {
-  color: var(--text-primary);
-}
-
-.terminal-output {
-  color: var(--text-secondary);
-}
-
-.cursor-blink {
-  display: inline-block;
-  width: 8px;
-  height: 18px;
-  background: var(--accent-1);
-  vertical-align: text-bottom;
-  animation: blink 1s step-end infinite;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
-footer {
-  padding: 48px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: relative;
-  z-index: 1;
-}
-
-.footer-left {
-  font-size: 14px;
-  color: var(--text-secondary);
-  letter-spacing: -0.01em;
-}
-
-.footer-links {
-  display: flex;
-  gap: 24px;
-  list-style: none;
-}
-
-.footer-links a {
-  color: var(--text-secondary);
-  text-decoration: none;
-  font-size: 14px;
-  transition: color 0.2s;
-  letter-spacing: -0.01em;
-}
-
-.footer-links a:hover {
-  color: var(--text-primary);
-}
-
-.reveal {
-  opacity: 0;
-  transform: translateY(32px);
-  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-}
-
-.reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-@media (max-width: 900px) {
-  nav { padding: 16px 24px; }
-  .nav-links { display: none; }
-  section { padding: 80px 24px; }
-  .hero { padding: 100px 24px 60px; }
-  .grid-3 { grid-template-columns: 1fr; }
-  .stats-grid { grid-template-columns: 1fr; }
-  .stat-item { padding: 32px 24px; }
-  footer { flex-direction: column; gap: 24px; text-align: center; }
-  .hero-actions { flex-direction: column; }
-}
+@media (max-width:700px){:root{--s:56px}.copy{padding:90px 18px 100px}.btn{height:50px;padding:0 24px}}
+@media (max-width:620px){.grid{grid-template-columns:1fr}.card{min-height:240px}.panel .acts,.panel .btn{width:100%}.panel .acts{flex-direction:column}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tile,.cue{animation:none}.node:hover .tile::after,.tile.shine::after,.sheen:hover::after{animation:none}.card:hover,.btn:hover{transform:none}}
 </style>
 </head>
 <body>
-
-<div class="cursor-glow" id="glow"></div>
-
-<nav>
-  <div class="nav-logo">docome</div>
-  <ul class="nav-links">
-    <li><a href="#features">Features</a></li>
-    <li><a href="#cli">CLI</a></li>
-    <li><a href="https://github.com/real-ds/docome">GitHub</a></li>
-  </ul>
-</nav>
-
-<section class="hero">
-  <div class="hero-badge reveal">
-    <span class="dot"></span>
-    v0.1.0 released
+<header id="hdr">
+  <div class="wrap nav">
+    <a class="logo" href="#top" translate="no">docome.</a>
+    <nav class="links" id="links" aria-label="Main">
+      <a href="#features">Features</a><a href="#how">How it works</a><a href="#cli">CLI</a>
+    </nav>
+    <a class="pill sheen" href="https://github.com/real-ds/docome/releases">Download</a>
+    <button class="menu" id="menu" type="button" aria-expanded="false" aria-controls="links" aria-label="Open navigation"><span></span><span></span></button>
   </div>
-  <h1 class="reveal">Documents,<br><span class="gradient-text">handled.</span></h1>
-  <p class="reveal">Merge, split, convert, sign, and OCR your PDFs. One tool. No uploads. Everything runs on your machine.</p>
-  <div class="hero-actions reveal">
-    <a href="https://github.com/real-ds/docome/releases" class="btn-primary">Download .exe</a>
-    <a href="https://github.com/real-ds/docome" class="btn-secondary">View Source</a>
+</header>
+ 
+<main>
+<section class="hero" id="top" style="padding:0">
+  <div class="spot"></div>
+  <canvas id="net" aria-hidden="true"></canvas>
+  <div id="nodes"></div>
+  <div class="copy">
+    <h1>Documents,<br>your <span class="soft">way.</span></h1>
+    <p class="sub">Convert, edit, merge and more — all in one place.</p>
+    <div class="cta-row">
+      <a class="btn main sheen" href="https://github.com/real-ds/docome/releases">Download for Windows
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <a class="btn ghost sheen" href="https://github.com/real-ds/docome">View on GitHub</a>
+    </div>
   </div>
+  <div class="cue" aria-hidden="true"><i></i><svg width="14" height="8" viewBox="0 0 14 8" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M1 1l6 6 6-6"/></svg></div>
 </section>
-
-<section id="features">
-  <div style="max-width:1200px;margin:0 auto;">
-    <div class="section-label reveal">Capabilities</div>
-    <h2 class="section-title reveal">What it does</h2>
-    <p class="section-desc reveal">Built on modular engines. Each operation is deterministic, scriptable, and runs locally.</p>
+ 
+<div class="strip"><div class="wrap">
+  <span class="lead">Built for everyday document work</span>
+  <b>PDF tools</b><b>Convert</b><b>OCR</b><b>Sign</b><b>Protect</b>
+</div></div>
+ 
+<section id="features"><div class="wrap">
+  <div class="head">
+    <div><div class="kicker">What you can do</div><h2>Less file juggling.<br>More getting done.</h2></div>
+    <p>The essential document operations, brought together in one straightforward toolkit. Choose a task, process your files, and get back to work.</p>
   </div>
-  <div class="grid-3">
-    <div class="card reveal">
-      <div class="card-icon">&#9638;</div>
-      <h3>PDF Operations</h3>
-      <p>Merge, split, extract, remove, rotate, compress. Page-level control over any PDF document.</p>
-    </div>
-    <div class="card reveal">
-      <div class="card-icon">&#8644;</div>
-      <h3>Conversion</h3>
-      <p>PDF to DOCX, XLSX, PPTX, Markdown, plain text. And back. Preserves layout and structure.</p>
-    </div>
-    <div class="card reveal">
-      <div class="card-icon">&#9998;</div>
-      <h3>E-Signatures</h3>
-      <p>Create typed signatures, place them on documents, add form fields. Full signing workflows.</p>
-    </div>
-    <div class="card reveal">
-      <div class="card-icon">&#9673;</div>
-      <h3>OCR</h3>
-      <p>Turn scanned documents into searchable, selectable text. Tesseract and EasyOCR backends.</p>
-    </div>
-    <div class="card reveal">
-      <div class="card-icon">&#9634;</div>
-      <h3>Image Engine</h3>
-      <p>Convert images to PDF, render PDF pages as images. Batch processing built in.</p>
-    </div>
-    <div class="card reveal">
-      <div class="card-icon">&#9670;</div>
-      <h3>Security</h3>
-      <p>Password protection, AES-256 encryption, metadata editing. Your files never leave your disk.</p>
-    </div>
+  <div class="grid">
+    <article class="card sheen"><div class="flow" data-flow="pdf + pdf > pdf"></div><div><h3>PDFs, under control.</h3><p>Merge, split, extract, remove, rotate, and compress pages with practical control over your documents.</p></div></article>
+    <article class="card sheen"><div class="flow" data-flow="pdf > docx"></div><div><h3>Switch formats easily.</h3><p>Convert PDFs to DOCX, XLSX, PPTX, Markdown, or plain text, with supported conversions back again.</p></div></article>
+    <article class="card sheen"><div class="flow" data-flow="img > txt"></div><div><h3>Make scans searchable.</h3><p>Turn scanned pages into text you can search, select, and reuse with supported OCR engines.</p></div></article>
+    <article class="card sheen"><div class="flow" data-flow="pdf ok"></div><div><h3>Finish the paperwork.</h3><p>Create typed signatures, place them on documents, and add form fields to your workflow.</p></div></article>
+    <article class="card sheen"><div class="flow" data-flow="img > pdf"></div><div><h3>Move between pages and images.</h3><p>Convert images to PDF or render PDF pages as images, including batch processing.</p></div></article>
+    <article class="card sheen"><div class="flow" data-flow="pdf lock"></div><div><h3>Keep your files close.</h3><p>Use supported password protection, AES-256 encryption, and metadata editing on local files.</p></div></article>
   </div>
-</section>
-
-<section class="stats-section">
-  <div class="stats-grid">
-    <div class="stat-item reveal">
-      <div class="stat-number" data-target="24">0</div>
-      <div class="stat-label">Passing tests</div>
-    </div>
-    <div class="stat-item reveal">
-      <div class="stat-number" data-target="5">0</div>
-      <div class="stat-label">Processing engines</div>
-    </div>
-    <div class="stat-item reveal">
-      <div class="stat-number" data-target="3">0</div>
-      <div class="stat-label">Interfaces (CLI, GUI, API)</div>
-    </div>
+</div></section>
+ 
+<section class="local" id="cli"><div class="wrap">
+  <div>
+    <div class="kicker">Local-first by design</div>
+    <h2>Your files stay yours.</h2>
+    <p class="lede">Sensitive documents should not need to pass through another online converter. Docome is built for local processing, with a command-line interface for repeatable tasks.</p>
   </div>
-</section>
-
-<section id="cli">
-  <div class="cli-section">
-    <div style="text-align:center;">
-      <div class="section-label reveal">Terminal</div>
-      <h2 class="section-title reveal" style="margin-left:auto;margin-right:auto;">Scriptable by default</h2>
-      <p class="section-desc reveal" style="margin-left:auto;margin-right:auto;">Every operation available through the CLI. Pipe it, script it, automate it.</p>
-    </div>
-    <div class="terminal reveal" id="terminal">
-      <div class="terminal-header">
-        <div class="terminal-dot r"></div>
-        <div class="terminal-dot y"></div>
-        <div class="terminal-dot g"></div>
-      </div>
-      <div class="terminal-body">
-        <div class="terminal-line" data-delay="0">
-          <span class="terminal-prompt">$ </span>
-          <span class="terminal-cmd">docome pdf merge report.pdf appendix.pdf -o final.pdf</span>
-        </div>
-        <div class="terminal-line" data-delay="600">
-          <span class="terminal-output">Merging 2 files...</span>
-        </div>
-        <div class="terminal-line" data-delay="1200">
-          <span class="terminal-output">Merged PDF saved to: final.pdf</span>
-        </div>
-        <div class="terminal-line" data-delay="2000">
-          <span class="terminal-prompt">$ </span>
-          <span class="terminal-cmd">docome convert pdf2docx final.pdf -o final.docx</span>
-        </div>
-        <div class="terminal-line" data-delay="2600">
-          <span class="terminal-output">Converting final.pdf to DOCX...</span>
-        </div>
-        <div class="terminal-line" data-delay="3200">
-          <span class="terminal-output">DOCX saved to: final.docx</span>
-        </div>
-        <div class="terminal-line" data-delay="4000">
-          <span class="terminal-prompt">$ </span>
-          <span class="cursor-blink"></span>
-        </div>
-      </div>
-    </div>
+  <div class="term">
+    <div class="term-head"><i></i><i></i><i></i>&nbsp;docome / terminal</div>
+<pre><code><span class="cmd">$ docome pdf merge</span>
+<span class="out">  report.pdf appendix.pdf -o final.pdf</span>
+<span class="ok">✓ Merged PDF saved to final.pdf</span>
+ 
+<span class="cmd">$ docome convert pdf2docx</span>
+<span class="out">  final.pdf -o final.docx</span>
+<span class="ok">✓ DOCX saved to final.docx</span>
+ 
+<span class="out">Ready for the next task.</span></code></pre>
+    <small>Scriptable commands for repeatable work, from quick operations to everyday automation.</small>
   </div>
-</section>
-
-<footer>
-  <div class="footer-left">MIT License. Built by Divyanshu Singh.</div>
-  <ul class="footer-links">
-    <li><a href="https://github.com/real-ds/docome">Source</a></li>
-    <li><a href="https://github.com/real-ds/docome/blob/main/LICENSE">License</a></li>
-    <li><a href="https://github.com/real-ds/docome/blob/main/PRIVACY.md">Privacy</a></li>
-  </ul>
-</footer>
-
+</div></section>
+ 
+<section id="how"><div class="wrap flowgrid">
+  <div class="intro">
+    <div class="kicker">A straightforward workflow</div>
+    <h2>Three steps.<br>Back to work.</h2>
+    <p>No complicated setup in the workflow itself. Pick what you need to do, choose where the result goes, and run it.</p>
+  </div>
+  <div>
+    <article class="step"><b>1</b><div><h3>Choose a task</h3><p>Start with a PDF, conversion, OCR, image, signature, or security operation.</p></div></article>
+    <article class="step"><b>2</b><div><h3>Set the output</h3><p>Choose the destination and format that suit what you need next.</p></div></article>
+    <article class="step"><b>3</b><div><h3>Run it</h3><p>Use the available interface or the CLI to repeat a workflow when you need it again.</p></div></article>
+  </div>
+</div></section>
+ 
+<section class="final"><div class="wrap"><div class="panel">
+  <div>
+    <div class="kicker">Ready when you are</div>
+    <h2>Make document work feel lighter.</h2>
+    <p>Get Docome, explore the source, and see if it fits the way you work.</p>
+  </div>
+  <div class="acts">
+    <a class="btn main sheen" href="https://github.com/real-ds/docome/releases">View releases</a>
+    <a class="btn ghost sheen" href="https://github.com/real-ds/docome">View on GitHub</a>
+  </div>
+</div></div></section>
+</main>
+ 
+<footer><div class="wrap">
+  <div><a class="logo" href="#top" translate="no" style="text-decoration:none">docome.</a><small>Built by Divyanshu Singh</small></div>
+  <nav aria-label="Footer"><a href="https://github.com/real-ds/docome">Source</a><a href="https://github.com/real-ds/docome/blob/main/LICENSE">License</a><a href="https://github.com/real-ds/docome/blob/main/PRIVACY.md">Privacy</a></nav>
+</div></footer>
+ 
 <script>
-const glow = document.getElementById('glow');
-let mouseX = 0, mouseY = 0, glowX = 0, glowY = 0;
-
-document.addEventListener('mousemove', e => {
-  mouseX = e.clientX;
-  mouseY = e.clientY;
-});
-
-function animateGlow() {
-  glowX += (mouseX - glowX) * 0.08;
-  glowY += (mouseY - glowY) * 0.08;
-  glow.style.left = glowX + 'px';
-  glow.style.top = glowY + 'px';
-  requestAnimationFrame(animateGlow);
-}
-animateGlow();
-
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-    }
+(() => {
+  // header state + mobile menu
+  const hdr = document.getElementById('hdr'), links = document.getElementById('links'), menu = document.getElementById('menu');
+  const setH = () => hdr.classList.toggle('scrolled', scrollY > 24);
+  setH(); addEventListener('scroll', setH, {passive:true});
+  const close = () => { links.classList.remove('open'); menu.setAttribute('aria-expanded','false'); menu.setAttribute('aria-label','Open navigation'); };
+  menu.addEventListener('click', () => {
+    const o = links.classList.toggle('open');
+    menu.setAttribute('aria-expanded', String(o)); menu.setAttribute('aria-label', o ? 'Close navigation' : 'Open navigation');
   });
-}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-
-const terminalObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const lines = entry.target.querySelectorAll('.terminal-line');
-      lines.forEach(line => {
-        const delay = parseInt(line.getAttribute('data-delay'));
-        setTimeout(() => line.classList.add('visible'), delay);
+  links.addEventListener('click', e => { if (e.target.closest('a')) close(); });
+  addEventListener('keydown', e => { if (e.key === 'Escape') { close(); } });
+  addEventListener('resize', () => { if (innerWidth > 760) close(); });
+ 
+  const IMG = '<svg viewBox="0 0 24 24" width="62%" aria-hidden="true"><circle cx="8" cy="8" r="2.6" fill="#fff"/><path d="M2 21l7-10 4.5 6 3-3.5L22 21z" fill="#fff"/></svg>';
+ 
+  // feature flows
+  const IC = {pdf:['PDF','#c8372d'], docx:['W','#2b6cd4'], img:[IMG,'#3d8fd1'], txt:['≡','#8b8178']};
+  const CHIP = {
+    ok:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>',
+    lock:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>'};
+  document.querySelectorAll('[data-flow]').forEach(el => {
+    el.innerHTML = el.dataset.flow.split(' ').map(t =>
+      IC[t] ? '<span class="ico" style="--c:' + IC[t][1] + '">' + IC[t][0] + '</span>' :
+      CHIP[t] ? '<span class="chip">' + CHIP[t] + '</span>' :
+      '<span class="sym">' + (t === '>' ? '→' : t) + '</span>').join('');
+  });
+ 
+  // hero network
+  const N = [
+    {id:'pdf', l:'PDF', g:'PDF', c:'#c8372d', x:9,  y:22, mx:14,my:19, d:1.1},
+    {id:'txt', l:'TXT', g:'≡',   c:'#8b8178', x:28, y:11, mx:40,my:13, d:.8},
+    {id:'docx',l:'DOCX',g:'W',   c:'#2b6cd4', x:7,  y:47, mx:14,my:82, d:1.05},
+    {id:'png', l:'PNG', g:IMG,   c:'#3d8fd1', x:23, y:40, d:.8, dm:1},
+    {id:'xlsx',l:'XLSX',g:'X',   c:'#1f8f55', x:10, y:73, mx:38,my:89, d:1},
+    {id:'html',l:'HTML',g:'&lt;/&gt;', c:'#1f9aa8', x:27, y:73, mx:62,my:83, d:.85},
+    {id:'pptx',l:'PPTX',g:'P',   c:'#e2582b', x:82, y:20, mx:66,my:17, d:1.05},
+    {id:'jpg', l:'JPG', g:IMG,   c:'#5a7bd8', x:92, y:37, mx:88,my:12, d:.8},
+    {id:'zip', l:'ZIP', g:'ZIP', c:'#b08a55', x:80, y:53, d:.9, dm:1},
+    {id:'csv', l:'CSV', g:'▦',   c:'#2fa36a', x:71, y:73, mx:87,my:88, d:1},
+    {id:'json',l:'JSON',g:'{ }', c:'#7a5ad6', x:93, y:67, d:.85, dm:1},
+    {id:'rtf', l:'RTF', g:'¶',   c:'#8b8178', x:82, y:87, d:.8, dm:1}
+  ];
+  const E = [['pdf','docx'],['pdf','txt'],['docx','png'],['docx','xlsx'],['png','html'],['xlsx','html'],
+    ['txt','pptx'],['pptx','jpg'],['pptx','zip'],['jpg','zip'],['zip','csv'],['csv','json'],['json','rtf'],
+    ['csv','rtf'],['html','csv'],['jpg','csv']];
+ 
+  const hero = document.getElementById('top'), host = document.getElementById('nodes');
+  const cv = document.getElementById('net'), ctx = cv.getContext('2d');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const idx = {}; N.forEach((n,i) => idx[n.id] = i);
+ 
+  const S = N.map((n,i) => {
+    const b = document.createElement('button');
+    b.className = 'node' + (n.d < .85 ? ' far' : '');
+    b.style.setProperty('--i', i);
+    b.setAttribute('aria-label', n.l + ' format');
+    b.innerHTML = '<span class="tile"><span class="ico" style="--c:' + n.c + '">' + n.g + '</span><span class="lb">' + n.l + '</span></span>';
+    host.appendChild(b);
+    const tile = b.firstChild;
+    tile.addEventListener('animationend', () => tile.classList.remove('shine','ring'));
+    return {el:b, tile, n, ph:Math.random()*6.28, sp:.35+Math.random()*.4, ax:6+Math.random()*8, ay:8+Math.random()*10,
+            ox:0, oy:0, px:0, py:0, hl:0, off:false};
+  });
+  const edges = E.map(([a,b],k) => ({a:idx[a], b:idx[b], s:k%2?1:-1, o:Math.random(), v:.05+Math.random()*.06}));
+  const nb = S.map(() => []);
+  edges.forEach((e,k) => { nb[e.a].push({j:e.b,k}); nb[e.b].push({j:e.a,k}); });
+ 
+  let W=0, H=0, mobile=false, hov=-1, last=0, live=true;
+  const mouse = {x:0,y:0,on:false}, par = {x:0,y:0,tx:0,ty:0};
+  const bursts = [];
+ 
+  function resize(){
+    W = hero.clientWidth; H = hero.clientHeight; mobile = W < 700;
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    cv.width = W*dpr; cv.height = H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+    S.forEach(s => { s.off = mobile && s.n.dm; s.el.hidden = s.off; });
+  }
+  addEventListener('resize', resize); resize();
+  new IntersectionObserver(([e]) => { const was = live; live = e.isIntersecting; if (live && !was) requestAnimationFrame(loop); }).observe(hero);
+ 
+  hero.addEventListener('pointermove', e => {
+    if (e.pointerType === 'touch') return;
+    const r = hero.getBoundingClientRect();
+    mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; mouse.on = true;
+    par.tx = mouse.x/W - .5; par.ty = mouse.y/H - .5;
+    hero.style.setProperty('--mx', mouse.x + 'px'); hero.style.setProperty('--my', mouse.y + 'px');
+    hero.classList.add('on');
+  });
+  hero.addEventListener('pointerleave', () => { mouse.on = false; par.tx = par.ty = 0; hero.classList.remove('on'); });
+ 
+  function shine(i, delay, cls){
+    setTimeout(() => { const t = S[i].tile; t.classList.remove(cls); void t.offsetWidth; t.classList.add(cls); }, delay);
+  }
+  S.forEach((s,i) => {
+    const enter = () => { hov = i; nb[i].forEach(({j}) => shine(j, 260, 'shine')); };
+    const leave = () => { if (hov === i) hov = -1; };
+    s.el.addEventListener('pointerenter', enter); s.el.addEventListener('pointerleave', leave);
+    s.el.addEventListener('focus', enter); s.el.addEventListener('blur', leave);
+    s.el.addEventListener('click', () => {
+      shine(i, 0, 'ring'); shine(i, 0, 'shine');
+      nb[i].forEach(({j,k}, n) => { bursts.push({k, from:i, t:-n*.08}); shine(j, 380 + n*90, 'shine'); });
+    });
+  });
+ 
+  const bez = (a,c,b,p) => { const q = 1-p; return {x:q*q*a.x+2*q*p*c.x+p*p*b.x, y:q*q*a.y+2*q*p*c.y+p*p*b.y}; };
+ 
+  function loop(ts){
+    if (!live) return;
+    const t = ts/1000, dt = Math.min(.05, Math.max(0, t-last)); last = t;
+    par.x += (par.tx-par.x)*.06; par.y += (par.ty-par.y)*.06;
+    const R = mobile ? 110 : 190;
+ 
+    S.forEach((s,i) => {
+      if (s.off) return;
+      const n = s.n, bx = (mobile?n.mx:n.x)/100*W, by = (mobile?n.my:n.y)/100*H;
+      const fx = reduce ? 0 : Math.sin(t*s.sp + s.ph)*s.ax, fy = reduce ? 0 : Math.cos(t*s.sp*.83 + s.ph)*s.ay;
+      let tx = 0, ty = 0;
+      if (mouse.on && !reduce){
+        const dx = bx+fx-mouse.x, dy = by+fy-mouse.y, dist = Math.hypot(dx,dy);
+        if (dist < R && dist > 0){ const f = Math.pow(1-dist/R,2)*55; tx = dx/dist*f; ty = dy/dist*f; }
+      }
+      s.ox += (tx-s.ox)*.1; s.oy += (ty-s.oy)*.1;
+      s.px = bx + fx - par.x*40*n.d + s.ox;
+      s.py = by + fy - par.y*28*n.d + s.oy;
+      const rot = reduce ? 0 : Math.sin(t*s.sp*.7 + s.ph)*3;
+      s.el.style.transform = 'translate3d(' + s.px.toFixed(1) + 'px,' + s.py.toFixed(1) + 'px,0) translate(-50%,-50%) rotate(' + rot.toFixed(2) + 'deg) scale(' + (.85+.15*n.d).toFixed(3) + ')';
+      s.hl += ((hov===i ? 1 : 0) - s.hl)*.14;
+    });
+ 
+    ctx.clearRect(0,0,W,H);
+    const g = ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#f0e2cc'); g.addColorStop(.55,'#d9c7ac'); g.addColorStop(.8,'#8a7358'); g.addColorStop(1,'#6b5640');
+    ctx.strokeStyle = g; ctx.lineCap = 'round';
+ 
+    const geo = edges.map(e => {
+      const A = S[e.a], B = S[e.b];
+      if (A.off || B.off) return null;
+      const a = {x:A.px,y:A.py}, b = {x:B.px,y:B.py};
+      const c = {x:(a.x+b.x)/2 - (b.y-a.y)*.16*e.s, y:(a.y+b.y)/2 + (b.x-a.x)*.16*e.s};
+      return {a,b,c};
+    });
+ 
+    edges.forEach((e,k) => {
+      const q = geo[k]; if (!q) return;
+      const h = Math.max(S[e.a].hl, S[e.b].hl);
+      ctx.globalAlpha = .17 + .6*h; ctx.lineWidth = 1 + .6*h;
+      ctx.beginPath(); ctx.moveTo(q.a.x,q.a.y); ctx.quadraticCurveTo(q.c.x,q.c.y,q.b.x,q.b.y); ctx.stroke();
+    });
+ 
+    ctx.globalAlpha = 1; ctx.fillStyle = '#ffe7c2'; ctx.shadowColor = 'rgba(255,205,140,.95)';
+    if (!reduce){
+      ctx.shadowBlur = 10;
+      edges.forEach((e,k) => {
+        const q = geo[k]; if (!q) return;
+        const p = (t*e.v + e.o) % 1, pt = bez(q.a,q.c,q.b,p);
+        ctx.globalAlpha = Math.sin(p*Math.PI)*.85; ctx.beginPath(); ctx.arc(pt.x,pt.y,2,0,6.283); ctx.fill();
       });
-      terminalObserver.unobserve(entry.target);
+      ctx.shadowBlur = 16;
+      for (let i = bursts.length-1; i >= 0; i--){
+        const u = bursts[i]; u.t += dt*1.1;
+        if (u.t > 1){ bursts.splice(i,1); continue; }
+        if (u.t < 0) continue;
+        const e = edges[u.k], q = geo[u.k]; if (!q){ bursts.splice(i,1); continue; }
+        const p = e.a === u.from ? u.t : 1-u.t, pt = bez(q.a,q.c,q.b,p);
+        ctx.globalAlpha = 1; ctx.beginPath(); ctx.arc(pt.x,pt.y,3.4,0,6.283); ctx.fill();
+      }
     }
-  });
-}, { threshold: 0.3 });
-
-const terminal = document.getElementById('terminal');
-if (terminal) terminalObserver.observe(terminal);
-
-const counterObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const el = entry.target;
-      const target = parseInt(el.getAttribute('data-target'));
-      let current = 0;
-      const step = Math.max(1, Math.floor(target / 30));
-      const interval = setInterval(() => {
-        current += step;
-        if (current >= target) {
-          current = target;
-          clearInterval(interval);
-        }
-        el.textContent = current;
-      }, 30);
-      counterObserver.unobserve(el);
-    }
-  });
-}, { threshold: 0.5 });
-
-document.querySelectorAll('.stat-number[data-target]').forEach(el => counterObserver.observe(el));
+    ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
 </script>
 </body>
 </html>
+ 
+
